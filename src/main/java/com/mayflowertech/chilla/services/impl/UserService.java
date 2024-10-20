@@ -1,0 +1,531 @@
+package com.mayflowertech.chilla.services.impl;
+
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.mayflowertech.chilla.config.AuthorizationConstants;
+import com.mayflowertech.chilla.config.Constants;
+import com.mayflowertech.chilla.config.JwtAuthorizationProvider;
+import com.mayflowertech.chilla.config.custom.CustomException;
+import com.mayflowertech.chilla.entities.Customer;
+import com.mayflowertech.chilla.entities.Manager;
+import com.mayflowertech.chilla.entities.Patient;
+import com.mayflowertech.chilla.entities.Role;
+import com.mayflowertech.chilla.entities.Student;
+import com.mayflowertech.chilla.entities.User;
+import com.mayflowertech.chilla.entities.pojo.CustomerPojo;
+import com.mayflowertech.chilla.entities.pojo.ManagerPojo;
+import com.mayflowertech.chilla.entities.pojo.PatientPojo;
+import com.mayflowertech.chilla.entities.pojo.ResetPasswordPojo;
+import com.mayflowertech.chilla.entities.pojo.StudentPojo;
+import com.mayflowertech.chilla.enums.SystemRoles;
+import com.mayflowertech.chilla.enums.UserStatus;
+import com.mayflowertech.chilla.repositories.ICustomerRepository;
+import com.mayflowertech.chilla.repositories.IManagerRepository;
+import com.mayflowertech.chilla.repositories.IPatientRepository;
+import com.mayflowertech.chilla.repositories.IStudentRepository;
+import com.mayflowertech.chilla.repositories.IUserRepository;
+import com.mayflowertech.chilla.services.IRoleService;
+import com.mayflowertech.chilla.services.IUserService;
+import com.mayflowertech.chilla.utils.CommonUtils;
+import com.mayflowertech.chilla.utils.PasswordUtils;
+
+@Service
+public class UserService implements UserDetailsService, IUserService {
+	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+	@Autowired
+	private IRoleService roleService;
+
+	@Autowired
+	private IUserRepository userRepository;
+
+	@Autowired
+	private ICustomerRepository customerRepository;
+	
+	@Autowired
+	private IStudentRepository studentRepository;
+
+	@Autowired
+	private IManagerRepository managerRepository;
+
+	@Autowired
+	private IPatientRepository patientRepository;
+	
+	@Autowired
+	private JwtAuthorizationProvider jwtTokenUtil;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User user = userRepository.findByUsername(username);
+		if (user == null) {
+			throw new UsernameNotFoundException("Invalid username or password.");
+		}
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+				getAuthority(user));
+	}
+
+	private Set<SimpleGrantedAuthority> getAuthority(User user) {
+		Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+		user.getRoles().forEach(role -> {
+			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRolecategory()));
+		});
+		return authorities;
+	}
+
+	@Override
+	public User createUser(User user) throws Throwable {
+		User existingUser = getByEmail(user.getEmail());
+		if (existingUser != null) {
+			throw new CustomException("Email already in use");
+		}
+		if (isExist(user)) {
+			return updateUser(user, false);
+		}
+		user.setPassword(PasswordUtils.generateSecurePassword(user.getPassword(), Constants.PASSWORD_SALT));
+
+		user.setStatus(UserStatus.INACTIVE.getCode());
+		user = userRepository.save(user);
+		logger.info("user updated in db: " + user);
+		return user;
+	}
+
+	@Override
+	public boolean validateUser(User user) {
+		String usrpwd = user.getPassword();
+		user = userRepository.findByUsernameAndActive(user.getUsername(), true);
+		if (user == null) {
+			System.out.println("validate user is null");
+		} else {
+
+			System.out.println("validate user is not null");
+			boolean passwordMatch = PasswordUtils.verifyUserPassword(usrpwd, user.getPassword(),
+					Constants.PASSWORD_SALT);
+			if (passwordMatch)
+				return true;
+			else {
+				System.out.println("Password match failed for " + user.getUsername());
+				return false;
+			}
+
+		}
+		return false;
+	}
+
+	@Override
+	public User updateUser(User user, boolean changepassword) {
+		logger.debug("updateUser  " + user);
+
+		User ret = userRepository.findById(user.getId());
+		if (ret != null) {
+			if (user.getReasonForDeactivate() != null && !user.getReasonForDeactivate().isEmpty())
+				ret.setReasonForDeactivate(user.getReasonForDeactivate());
+			if (user.getReasonForDelete() != null && !user.getReasonForDelete().isEmpty())
+				ret.setReasonForDelete(user.getReasonForDelete());
+			if (user.getUsername() != null && !user.getUsername().isEmpty())
+				ret.setUsername(user.getUsername());
+			if (user.getEmail() != null && !user.getEmail().isEmpty())
+				ret.setEmail(user.getEmail());
+			if (user.getFirstName() != null && !user.getFirstName().isEmpty())
+				ret.setFirstName(user.getFirstName());
+			if (user.getLastName() != null && !user.getLastName().isEmpty())
+				ret.setLastName(user.getLastName());
+			if (user.getProvider() != null && !user.getProvider().isEmpty())
+				ret.setProvider(user.getProvider());
+			if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty())
+				ret.setPhotoUrl(user.getPhotoUrl());
+
+			if (changepassword)
+				ret.setPassword(PasswordUtils.generateSecurePassword(user.getPassword(), Constants.PASSWORD_SALT));
+			ret.setActive(user.isActive());
+			return userRepository.save(ret);
+		}
+		return null;
+	}
+
+	@Override
+	public User getUser(String username) {
+		return userRepository.findByUsername(username);
+	}
+
+	@Override
+	public User getById(String id) {
+		return userRepository.findById(UUID.fromString(id));
+	}
+
+	@Override
+	@Transactional
+	public User addRoletoUser(User user, Role role) {
+		logger.info("addRoletoUser  " + user + "   role " + role);
+		try {
+			User ret = userRepository.findById(user.getId());
+			if (role.getId() != null && role.getRolename() == null) {
+				role = roleService.getById(role.getId().toString());
+			}
+			if ((ret != null) && (!this.hasRole(ret, role))) {
+				ret.addRole(role);
+				return userRepository.save(ret);
+			}
+
+			return user;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public User removeRolefromUser(User user, Role role) {
+		logger.debug("removeRolefromUser  " + user + "   role " + role);
+		User ret = userRepository.findById(user.getId());
+		ret.removeRole(role);
+		return userRepository.save(ret);
+	}
+
+	@Override
+	public boolean hasRole(User user, Role role) {
+		System.out.println("before  " + user + "   role " + role);
+
+		user = userRepository.findByUsername(user.getUsername());
+		logger.info("hasRole  " + user + "   role " + role);
+		if (user != null) {
+			if (user.getRoles() == null) {
+				// System.out.println("user roles is null");
+				return false;
+			}
+			if (user.getRoles().size() == 0) {
+				// System.out.println("user has no roles");
+				return false;
+			}
+			for (Role tmpRole : user.getRoles()) {
+				if (tmpRole.getRolename().trim().equalsIgnoreCase(role.getRolename().trim()))
+					return true;
+			}
+		} else {
+			System.out.println("user is null");
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isExist(User user) {
+		User ret = userRepository.findByUsername(user.getUsername());
+		if (ret == null && user.getId() != null) {
+			ret = userRepository.findById(user.getId());
+		}
+		if (ret == null)
+			return false;
+		else
+			return true;
+	}
+
+	@Override
+	public List<User> getAllUsers() {
+		return userRepository.findAll();
+	}
+
+	@Override
+	public List<User> getAllActiveUsers() {
+		// TODO Auto-generated method stub
+		return userRepository.findByActiveOrderByUsernameAsc(true);
+	}
+
+	@Override
+	public User getCurrentLoggedInUser() {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		System.out.println("Getting current logged in user");
+		String username = "";
+		User user = null;
+		if (principal instanceof UserDetails) {
+
+			username = ((UserDetails) principal).getUsername();
+			System.out.println("Getting current logged in user : " + username);
+
+		} else {
+
+			username = principal.toString();
+			System.out.println("else Getting current logged in user : " + username);
+
+		}
+		if (username.trim().length() > 0) {
+			user = userRepository.findByUsername(username.trim());
+		}
+		return user;
+	}
+
+	public String generatePasswordResetLink(User user, String uri) {
+		String ret = "";
+
+		if (user == null)
+			return ret;
+		if (user.getUsername() == null)
+			return ret;
+		if (user.getUsername().trim().isEmpty())
+			return ret;
+
+		long ut1 = Instant.now().getEpochSecond();
+		String data = uri + "##" + ut1 + "##" + user.getUsername();
+		ret = CommonUtils.encrypt(data, AuthorizationConstants.AES_SIGNINGSALT, AuthorizationConstants.AES_SIGNINGSALT);
+
+		return ret.replace("/", "**").replace("\n", "").replace("\r", "");
+	}
+
+	
+	public User getUserFromSignature(String data) {
+		User user = null;
+
+		if (data == null)
+			return user;
+
+		if (data.trim().isEmpty())
+			return user;
+
+		long ut1 = Instant.now().getEpochSecond();
+		System.out.println("1 signature is \n" + data);
+
+		String decryptdata = CommonUtils.decrypt(data, AuthorizationConstants.AES_SIGNINGSALT,
+				AuthorizationConstants.AES_SIGNINGSALT);
+		String[] tokens = decryptdata.split("##");
+
+		System.out.println("decryptdata = " + decryptdata);
+		System.out.println("Tokens : " + tokens.length);
+
+		if (tokens.length == 3) {
+			String username = tokens[1];
+			System.out.println("Token user : " + username);
+			String validstatus = tokens[2];
+			if (validstatus.trim().equalsIgnoreCase("OK")) {
+				user = this.getUser(username);
+			}
+		}
+
+		return user;
+	}
+
+	@Override
+	public User checkSocialUser(User user) {
+
+		if (isExist(user)) {
+			user = userRepository.findByUsername(user.getUsername());
+		} else {
+			user.setPassword(PasswordUtils.generateSecurePassword(user.getSocialId(), Constants.PASSWORD_SALT));
+			Role role = roleService.getRoleByName(SystemRoles.GUEST.getRoleCode());
+			user = userRepository.save(user);
+			addRoletoUser(user, role);
+		}
+
+		final Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getSocialId()));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		final String token = jwtTokenUtil.generateToken(authentication);
+		user.setAuthtoken(token);
+		return user;
+	}
+
+	@Override
+	public User getByEmail(String email) {
+		return userRepository.findByEmail(email);
+	}
+
+	@Transactional
+	public Customer registerCustomer(CustomerPojo customerPojo) throws Throwable {
+	    // Check if the user already exists in the `users` table
+	    User existingUser = userRepository.findByEmail(customerPojo.getEmail());
+	    if (existingUser == null) {
+	        throw new CustomException("User does not exist");
+	    }
+
+	    // Check if the Customer entry already exists for the user
+	    Optional<Customer> existingCustomerOpt = customerRepository.findByRegisteredUser(existingUser);
+	    if (existingCustomerOpt.isPresent()) {
+	        throw new CustomException("Customer already exists for this user");
+	    }
+
+	    // Create a new Customer entity and set the fields from CustomerPojo
+	    Customer newCustomer = new Customer();
+	    newCustomer.setJob(customerPojo.getJob());
+	    newCustomer.setCity(customerPojo.getCity());
+	    newCustomer.setCountry(customerPojo.getCountry());
+	    
+	    // Set the registeredUser to the existing user
+	    newCustomer.setRegisteredUser(existingUser);
+
+	    // Save the new Customer entity (only inserting into the `customers` table)
+	    return customerRepository.save(newCustomer);
+	}
+
+	@Override
+	public Student registerStudent(StudentPojo student) throws Throwable {
+	    User existingUser = userRepository.findByEmail(student.getEmail());
+	    if (existingUser == null) {
+	        throw new CustomException("User does not exist");
+	    }
+
+	    Optional<Student> existingManagerOpt = studentRepository.findByRegisteredUser(existingUser);
+	    if (existingManagerOpt.isPresent()) {
+	        throw new CustomException("Student already exists as this user");
+	    }
+	    
+	    if(student.getFirstName() != null || student.getLastName() != null) {
+	    	existingUser.setFirstName(student.getFirstName());
+	    	existingUser.setLastName(student.getLastName());
+	    	userRepository.save(existingUser);
+	    }
+
+	    Student newStudent = new Student();
+	    newStudent.setAge(student.getAge());
+	    newStudent.setCollege(student.getCollege());
+	    newStudent.setCompletionYear(student.getCompletionYear());
+	    newStudent.setCourse(student.getCourse());
+	    newStudent.setRegisteredUser(existingUser);
+	    return studentRepository.save(newStudent);
+	}
+
+	@Override
+	public Patient enrollPatient(PatientPojo pojo) throws Throwable {
+		User existingUser = userRepository.findByEmail(pojo.getEmail());
+		if (existingUser != null) {
+	        throw new CustomException("User already  exist "+pojo.getEmail());
+	    }
+		Patient patient = new Patient();
+		patient.setAge(pojo.getAge());
+		patient.setActive(true);
+		patient.setEnrolledBy(pojo.getEnrolledBy());
+		patient.setFirstName(pojo.getFirstName());
+		patient.setLastName(pojo.getLastName());
+		patient.setHealthDescription(pojo.getHealthDescription());
+		patient.setGender(pojo.getGender());
+		return patientRepository.save(patient);
+		
+	}
+	
+
+	@Override
+	public Manager registerManager(ManagerPojo manager) throws Throwable {
+	    User existingUser = userRepository.findByEmail(manager.getEmail());
+	    if (existingUser == null) {
+	        throw new CustomException("User does not exist");
+	    }
+
+	    Optional<Manager> existingManagerOpt = managerRepository.findByRegisteredUser(existingUser);
+	    if (existingManagerOpt.isPresent()) {
+	        throw new CustomException("Manager already exists as this user");
+	    }
+
+	    Manager newManager = new Manager();
+	    newManager.setRegisteredUser(existingUser);
+	    return managerRepository.save(newManager);
+	}
+
+	@Override
+	public Long getManagerId(User user) throws CustomException {
+	    Optional<Manager> managerOptional = managerRepository.findByRegisteredUser(user);
+	    if (managerOptional.isPresent()) {
+	        return managerOptional.get().getManagerId();  
+	    } else {
+	        // Throw CustomException if manager is not found
+	        throw new CustomException("The user dont have Manager role.");
+	    }
+	}
+
+
+	@Override
+	public Long getStudentId(User user) throws CustomException {
+		Optional<Student> studentOptional =  studentRepository.findByRegisteredUser(user);
+		if(studentOptional.isPresent()) {
+			return studentOptional.get().getStudentId();
+		}else {
+			throw new CustomException("The user yet to register as student");
+		}
+	}
+
+	@Override
+	public User getByMobile(String mobile) {
+		return userRepository.findByMobile(mobile);
+	}
+
+	@Override
+	public User updateUserStatus(UUID userId, String newStatus) throws CustomException {
+        // Fetch the user from the repository
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw new CustomException("User not found");
+        }
+        logger.info("Updating the status to "+newStatus+"  for user "+user);
+        user.setStatus(newStatus);
+
+        return userRepository.save(user);
+    }
+
+	@Override
+	public User changePassword(ResetPasswordPojo pojo) throws CustomException {
+	    if (pojo.getEmail() == null || pojo.getPassword() == null) {
+	        throw new CustomException("Email or password cannot be null.");
+	    }
+
+	    User user = userRepository.findByEmail(pojo.getEmail());
+	    if (user == null) {
+	        throw new CustomException("User not found with email: " + pojo.getEmail());
+	    }
+	    
+	    
+	    //TODO admin can override this
+	    if(! user.isOtpWaiting()) {
+	    	throw new CustomException("User not expecting OTP.");
+	    }
+
+	    if (pojo.getPassword().length() < 8) {
+	        throw new CustomException("Password must be at least 8 characters long.");
+	    }
+	    user.setPassword(PasswordUtils.generateSecurePassword(pojo.getPassword(), Constants.PASSWORD_SALT));
+	    user.setOtpWaiting(false);
+	    user.setStatus(UserStatus.ACTIVE.getCode());
+	    user = userRepository.save(user);
+	    logger.info("password changed successfully for user "+user);
+	    
+	    
+        final Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), pojo.getPassword())
+            );
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        final String token = jwtTokenUtil.generateToken(authentication);
+        user.setAuthtoken(token);
+
+	    return user;
+	}
+
+	@Override
+	public User markUserAsRegistered(String email) throws CustomException {
+		User existingUser = userRepository.findByEmail(email);
+	    if (existingUser == null) {
+	        throw new CustomException("User does not exist "+email);
+	    }
+	    existingUser.setRegistered(true);
+	    existingUser = userRepository.save(existingUser);
+	    return existingUser;
+	}
+
+}
