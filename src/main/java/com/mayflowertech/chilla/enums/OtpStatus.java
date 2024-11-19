@@ -1,7 +1,7 @@
 package com.mayflowertech.chilla.enums;
 
 public enum OtpStatus {
-	GENERATED("Generated"), SENT("Sent"), VERIFIED("Verified");
+	GENERATED("GENERATED"), SENT("SENT"), VERIFIED("VERIFIED"), FAILED("FAILED");
 
 	private final String code;
 

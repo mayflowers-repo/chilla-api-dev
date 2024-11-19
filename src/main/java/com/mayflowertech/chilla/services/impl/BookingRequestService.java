@@ -1,5 +1,6 @@
 package com.mayflowertech.chilla.services.impl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +76,6 @@ public class BookingRequestService implements IBookingRequestService {
 		 }
 		
 		 
-		 bookingRequest.setStatus(BookingStatus.ASSIGNED.getCode());
 		 
 		logger.info("saving booking request");
 		return bookingRequestsRepository.save(bookingRequest);
@@ -108,10 +108,20 @@ public class BookingRequestService implements IBookingRequestService {
 	}
 
 	@Override
-	public List<BookingRequest> getBookingRequestsByStatus(BookingStatus status) throws CustomException {
-		 return bookingRequestsRepository.findByStatus(status);
+	public List<BookingRequest> getBookingRequestsByStatus(String status) throws CustomException { 
+		if (!isValidBookingStatus(status)) {
+	        throw new CustomException("Invalid status: " + status);
+	    }
+
+		 return bookingRequestsRepository.findByStatus(status.toUpperCase());
 	}
 
+	
+	private boolean isValidBookingStatus(String status) {
+	    return Arrays.stream(BookingStatus.values())
+	                 .anyMatch(bookingStatus -> bookingStatus.getCode().equalsIgnoreCase(status));
+	}
+	
 	@Override
 	public List<BookingRequest> getBookingRequestsCreatedBetween(Date startDate, Date endDate) throws CustomException {
 		return bookingRequestsRepository.findByCreatedOnBetween(startDate, endDate);

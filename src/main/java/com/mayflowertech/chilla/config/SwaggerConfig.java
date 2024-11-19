@@ -20,14 +20,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
-    
+
     @Bean
-    public Docket SystemConfigurationApi() {
+    public Docket metadataApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("System Configuration API v1.0")
-//                .apiInfo(metaData())
+                .groupName("Metadata API v1.0")
                 .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/systemmanagement/**"))
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/metadata/**"))
                 .build()
                 .globalOperationParameters(
                         Lists.newArrayList(new ParameterBuilder()
@@ -35,55 +35,108 @@ public class SwaggerConfig {
                                 .description("Access Token")
                                 .modelRef(new ModelRef("string"))
                                 .parameterType("header")
-                                .required(true)
+                                .required(true)  // Set to true if the authorization is required for all endpoints
+                                .build()));
+    }
+    
+    @Bean
+    public Docket bookingRequestsApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Booking Requests API v1.0")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/bookingrequest/**"))
+                .build()
+                .globalOperationParameters(
+                        Lists.newArrayList(new ParameterBuilder()
+                                .name("Authorization")
+                                .description("Access Token")
+                                .modelRef(new ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)  // Set to true if the authorization is required for all endpoints
+                                .build()));
+    }
+    
+    @Bean
+    public Docket personaApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Persona API v1.0")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/persona/**"))
+                .build()
+                .globalOperationParameters(
+                        Lists.newArrayList(new ParameterBuilder()
+                                .name("Authorization")
+                                .description("Access Token")
+                                .modelRef(new ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)  // Set to true if the authorization is required for all endpoints
+                                .build()));
+    }
+    
+    @Bean
+    public Docket staffApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Staff API v1.0")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/staff/**"))
+                .build()
+                .globalOperationParameters(
+                        Lists.newArrayList(new ParameterBuilder()
+                                .name("Authorization")
+                                .description("Access Token")
+                                .modelRef(new ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)  // Set to true if the authorization is required for all endpoints
+                                .build()));
+    }
+
+    
+    @Bean
+    public Docket roleRequestsApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Role Requests API v1.0")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/rolerequest/**"))
+                .build()
+                .globalOperationParameters(
+                        Lists.newArrayList(new ParameterBuilder()
+                                .name("Authorization")
+                                .description("Access Token")
+                                .modelRef(new ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)  // Set to true if the authorization is required for all endpoints
+                                .build()));
+    }
+    
+    @Bean
+    public Docket workLogRequestsApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("Work Log API v1.0")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/worklog/**"))
+                .build()
+                .globalOperationParameters(
+                        Lists.newArrayList(new ParameterBuilder()
+                                .name("Authorization")
+                                .description("Access Token")
+                                .modelRef(new ModelRef("string"))
+                                .parameterType("header")
+                                .required(true)  // Set to true if the authorization is required for all endpoints
                                 .build()));
     }
 
     @Bean
-    public Docket WorkflowManagementApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Workflow Management API v1.0")
-//                .apiInfo(metaData())
-                .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/workflowmgmt/**"))
-                .build()
-                .globalOperationParameters(
-                        Lists.newArrayList(new ParameterBuilder()
-                                .name("Authorization")
-                                .description("Access Token")
-                                .modelRef(new ModelRef("string"))
-                                .parameterType("header")
-                                .required(false)
-                                .build()));
-    }
-
-    
-    @Bean
-    public Docket ClientContactManagement() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Client contact Management API v1.0")
-//                .apiInfo(metaData())
-                .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/clientcontactmanagement/**"))
-                .build()
-                .globalOperationParameters(
-                        Lists.newArrayList(new ParameterBuilder()
-                                .name("Authorization")
-                                .description("Access Token")
-                                .modelRef(new ModelRef("string"))
-                                .parameterType("header")
-                                .required(false)
-                                .build()));
-    }
-  
-    
-    @Bean
-    public Docket UserManagementApi() {
+    public Docket userMgmtApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("User Management API v1.0")
-//                .apiInfo(metaData())
                 .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/usermanagement/**"))
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/usermanagement/**"))
                 .build()
                 .globalOperationParameters(
                         Lists.newArrayList(new ParameterBuilder()
@@ -91,18 +144,17 @@ public class SwaggerConfig {
                                 .description("Access Token")
                                 .modelRef(new ModelRef("string"))
                                 .parameterType("header")
-                                .required(false)
+                                .required(true)  // Set to true if the authorization is required for all endpoints
                                 .build()));
     }
     
-    
     @Bean
-    public Docket ExecutionManagementApi() {
+    public Docket documentMgmtApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Workflow Execution API v1.0")
-//                .apiInfo(metaData())
+                .groupName("Document Management API v1.0")
                 .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/executewk/**"))
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/documents/**"))
                 .build()
                 .globalOperationParameters(
                         Lists.newArrayList(new ParameterBuilder()
@@ -110,17 +162,20 @@ public class SwaggerConfig {
                                 .description("Access Token")
                                 .modelRef(new ModelRef("string"))
                                 .parameterType("header")
-                                .required(false)
+                                .required(true)  
                                 .build()));
+        
+        
     }
     
+    
     @Bean
-    public Docket TinyUrlManagementApi() {
+    public Docket otpMgmtApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Tiny URL Execution API v1.0")
-//                .apiInfo(metaData())
+                .groupName("OTP Management API v1.0")
                 .select()
-                .paths(PathSelectors.ant("/ec/**"))
+                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.chilla.controllers"))
+                .paths(PathSelectors.ant("/karuthal/api/v1/email/**"))
                 .build()
                 .globalOperationParameters(
                         Lists.newArrayList(new ParameterBuilder()
@@ -128,56 +183,12 @@ public class SwaggerConfig {
                                 .description("Access Token")
                                 .modelRef(new ModelRef("string"))
                                 .parameterType("header")
-                                .required(false)
+                                .required(true)  
                                 .build()));
+        
+        
     }
     
-    @Bean
-    public Docket ScreenManagementApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("Screen Management API v1.0")
-//                .apiInfo(metaData())
-                .select()
-                .paths(PathSelectors.ant("/teamweb/api/v1/screenmgmt/**"))
-                .build()
-                .globalOperationParameters(
-                        Lists.newArrayList(new ParameterBuilder()
-                                .name("Authorization")
-                                .description("Access Token")
-                                .modelRef(new ModelRef("string"))
-                                .parameterType("header")
-                                .required(false)
-                                .build()));
-    }
-    
-
-    
- /*
-    @Bean
-    public Docket apiDocket() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(metadata())
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.mayflowertech.easycampaigns"))
-                .build();
-    }
-    */
-    
-
-    
-//    private ApiInfo metaData() {
-//        ApiInfo apiInfo = new ApiInfo(
-//                "Inflow API for Workflow Management System",
-//                "REST API for Inflow - Workflow Management System",
-//                "1.0",
-//                "Terms of service",
-//                new Contact("Inginim", "http://www.inginim.com", "support@inginim.com"),
-//               "Apache License Version 2.0",
-//                "https://www.apache.org/licenses/LICENSE-2.0");
-//
-//        return apiInfo;
-//
-//    }
     
     @Bean
     public SecurityConfiguration securityInfo() {
@@ -185,8 +196,6 @@ public class SwaggerConfig {
     }
 
     private ApiKey apiKey() {
-        //return new ApiKey("Authorization", "token", "header");
         return new ApiKey("Authorization", "Bearer", "header");
     }
-
 }

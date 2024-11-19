@@ -59,7 +59,7 @@ public class JacksonFilterConfig {
          } else {
              filterProvider.addFilter(filterId, SimpleBeanPropertyFilter.filterOutAllExcept(fields));
              addedFilters.add(filterId);
-             logger.info("Added filter '" + filterId + "' with fields: " + String.join(", ", fields));
+             //logger.info("Added filter '" + filterId + "' with fields: " + String.join(", ", fields));
          }
         // Add new filter for the specified filter ID
         filterProvider.addFilter(filterId, SimpleBeanPropertyFilter.filterOutAllExcept(fields));

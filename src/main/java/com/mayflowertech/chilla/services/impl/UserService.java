@@ -37,13 +37,16 @@ import com.mayflowertech.chilla.entities.pojo.ManagerPojo;
 import com.mayflowertech.chilla.entities.pojo.PatientPojo;
 import com.mayflowertech.chilla.entities.pojo.ResetPasswordPojo;
 import com.mayflowertech.chilla.entities.pojo.StudentPojo;
+import com.mayflowertech.chilla.enums.MailOtpPurpose;
 import com.mayflowertech.chilla.enums.SystemRoles;
 import com.mayflowertech.chilla.enums.UserStatus;
 import com.mayflowertech.chilla.repositories.ICustomerRepository;
 import com.mayflowertech.chilla.repositories.IManagerRepository;
+import com.mayflowertech.chilla.repositories.IOtpRepository;
 import com.mayflowertech.chilla.repositories.IPatientRepository;
 import com.mayflowertech.chilla.repositories.IStudentRepository;
 import com.mayflowertech.chilla.repositories.IUserRepository;
+import com.mayflowertech.chilla.services.IMailService;
 import com.mayflowertech.chilla.services.IRoleService;
 import com.mayflowertech.chilla.services.IUserService;
 import com.mayflowertech.chilla.utils.CommonUtils;
@@ -77,6 +80,9 @@ public class UserService implements UserDetailsService, IUserService {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
+	@Autowired
+	private IMailService mailService;
+	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		User user = userRepository.findByUsername(username);
@@ -357,6 +363,7 @@ public class UserService implements UserDetailsService, IUserService {
 	        throw new CustomException("User does not exist");
 	    }
 
+	    existingUser.setRegistered(true);
 	    // Check if the Customer entry already exists for the user
 	    Optional<Customer> existingCustomerOpt = customerRepository.findByRegisteredUser(existingUser);
 	    if (existingCustomerOpt.isPresent()) {
@@ -417,6 +424,7 @@ public class UserService implements UserDetailsService, IUserService {
 		patient.setLastName(pojo.getLastName());
 		patient.setHealthDescription(pojo.getHealthDescription());
 		patient.setGender(pojo.getGender());
+		patient.setRelationWithPatient(pojo.getRelationWithPatient());
 		return patientRepository.save(patient);
 		
 	}
@@ -490,15 +498,16 @@ public class UserService implements UserDetailsService, IUserService {
 	        throw new CustomException("User not found with email: " + pojo.getEmail());
 	    }
 	    
-	    
-	    //TODO admin can override this
 	    if(! user.isOtpWaiting()) {
 	    	throw new CustomException("User not expecting OTP.");
 	    }
-
+	    
 	    if (pojo.getPassword().length() < 8) {
 	        throw new CustomException("Password must be at least 8 characters long.");
 	    }
+
+	  
+	    
 	    user.setPassword(PasswordUtils.generateSecurePassword(pojo.getPassword(), Constants.PASSWORD_SALT));
 	    user.setOtpWaiting(false);
 	    user.setStatus(UserStatus.ACTIVE.getCode());
@@ -526,6 +535,16 @@ public class UserService implements UserDetailsService, IUserService {
 	    existingUser.setRegistered(true);
 	    existingUser = userRepository.save(existingUser);
 	    return existingUser;
+	}
+
+	@Override
+	public Long getCustomerId(User user) throws CustomException {
+		Optional<Customer> customerOptional =  customerRepository.findByRegisteredUser(user);
+		if(customerOptional.isPresent()) {
+			return customerOptional.get().getCustomerId();
+		}else {
+			throw new CustomException("The user yet to register as customer");
+		}
 	}
 
 }

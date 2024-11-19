@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mayflowertech.chilla.config.JacksonFilterConfig;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.ApiResult;
 import com.mayflowertech.chilla.entities.BookingRequest;
@@ -41,7 +43,10 @@ import io.swagger.annotations.ApiResponses;
 public class StaffController {
 	private static final Logger logger = LoggerFactory.getLogger(StaffController.class);
 
-
+	  @Autowired
+	  private JacksonFilterConfig jacksonFilterConfig;
+	  
+	  
 	@Autowired
 	private IPersonaService personaService;
 	
@@ -51,7 +56,7 @@ public class StaffController {
     @Autowired
     private IManagerService managerService;
     
-    
+    @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
     @ApiOperation(value = "View a list of all students")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -114,6 +119,7 @@ public class StaffController {
 	    public ApiResult<StudentPojo> getStudentById(@PathVariable Long studentId) {
 		  logger.info("fetching details for student "+studentId);
 	        try {
+	        	jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "photoUrl");
 	            Student student = studentService.getStudentDetails(studentId);
 	            StudentPojo result = new StudentPojo();
 	            if (student == null) {
@@ -136,9 +142,12 @@ public class StaffController {
 	        } catch (Exception e) {
 	            // Handle unexpected exceptions
 	            return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+	        }finally {
+	        	jacksonFilterConfig.clearFilters();
 	        }
 	    }
 
+	  
 	  @ApiOperation(value = "Update details of a student by ID")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully updated student details"),
@@ -184,7 +193,7 @@ public class StaffController {
 	      }
 	  }
 
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "Update details of a manager by ID")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully updated manager details"),
@@ -223,7 +232,7 @@ public class StaffController {
 	      }
 	  }
 
-
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "Get details of a manager by ID")
 	    @ApiResponses(value = {
 	        @ApiResponse(code = 200, message = "Successfully retrieved manager details"),
@@ -254,6 +263,7 @@ public class StaffController {
 	        }
 	    }
 	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	    @ApiOperation(value = "Assign students to a booking request")
 	    @ApiResponses(value = {
 	        @ApiResponse(code = 200, message = "Successfully assigned students to booking request"),
@@ -262,7 +272,7 @@ public class StaffController {
 	    @RequestMapping(value = "/assignstudents", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	    public ApiResult<BookingRequestAssignPojo> assignStudentsToBookingRequest(
 	            @RequestBody BookingRequestAssignPojo bookingRequestPojo) {
-	        
+	        logger.info("assignstudents "+bookingRequestPojo);
 	        try {
 	            // Call the service layer to assign the students to the booking request
 	            BookingRequest updatedBookingRequest = managerService.assignStudentsToBookingRequest(

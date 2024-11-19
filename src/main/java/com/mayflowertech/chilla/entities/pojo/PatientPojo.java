@@ -4,6 +4,7 @@ import com.mayflowertech.chilla.entities.Customer;
 import com.mayflowertech.chilla.entities.Patient;
 import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.enums.Gender;
+import com.mayflowertech.chilla.enums.PatientRelation;
 
 public class PatientPojo {
 
@@ -16,6 +17,7 @@ public class PatientPojo {
 	private String firstName;
 	private String lastName;
 	private Customer enrolledBy;
+	private PatientRelation relationWithPatient;
 	
 	public PatientPojo(Patient patient) {
 		this.patientId = patient.getPatientId();
@@ -82,6 +84,14 @@ public class PatientPojo {
 	}
 	public void setEnrolledBy(Customer enrolledBy) {
 		this.enrolledBy = enrolledBy;
+	}
+
+	public PatientRelation getRelationWithPatient() {
+		return relationWithPatient;
+	}
+
+	public void setRelationWithPatient(PatientRelation relationWithPatient) {
+		this.relationWithPatient = relationWithPatient;
 	}
 	
 	

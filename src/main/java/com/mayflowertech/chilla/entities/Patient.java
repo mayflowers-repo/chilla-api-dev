@@ -16,6 +16,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.mayflowertech.chilla.enums.Gender;
+import com.mayflowertech.chilla.enums.PatientRelation;
 
 @JsonFilter("PatientFilter")
 @Entity
@@ -41,6 +42,9 @@ public class Patient  extends BaseEntity implements Serializable {
 	private String healthDescription;
 
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "relation")
+	private PatientRelation relationWithPatient;
 	
 	public Long getPatientId() {
 		return patientId;
@@ -125,7 +129,22 @@ public class Patient  extends BaseEntity implements Serializable {
 	public void setEnrolledBy(Customer enrolledBy) {
 		this.enrolledBy = enrolledBy;
 	}
-    
-    
 
+	public PatientRelation getRelationWithPatient() {
+		return relationWithPatient;
+	}
+
+	public void setRelationWithPatient(PatientRelation relationWithPatient) {
+		this.relationWithPatient = relationWithPatient;
+	}
+    
+    
+	@Column(name = "email",  nullable = true, length = 50)
+	private String email;
+	
+	
+	@Column(name = "mobile",  nullable = true, length = 15)
+	private String mobile;
+	
+	
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.ApiResult;
 import com.mayflowertech.chilla.entities.pojo.EmailVerifyPojo;
+import com.mayflowertech.chilla.enums.MailOtpPurpose;
 import com.mayflowertech.chilla.services.IMailService;
 
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +30,8 @@ public class EmailController {
 	@Autowired
 	private IMailService mailService;
 
+	
+	@Deprecated
 	@ApiOperation(value = "Send a verification email")
 	@ApiResponses(value = {
 	    @ApiResponse(code = 200, message = "Successfully sent verification email"),
@@ -38,11 +41,8 @@ public class EmailController {
 	public ApiResult<String> sendVerificationEmail(@RequestBody EmailVerifyPojo emailRequest) {
 	    try {
 	        // Generate OTP
-	        String otp = mailService.generateOtp(emailRequest.getEmail());
+	        String otp = mailService.generateAndSendOtp(emailRequest.getEmail(), MailOtpPurpose.EMAIL_VERIFICATION.getCode());
 	        
-	        // Send the verification email (no verification link provided here)
-	        mailService.sendVerificationEmail(emailRequest.getEmail(), emailRequest.getName(), otp, null);
-
 	        // Log and return success message
 	        logger.info("Verification email sent to " + emailRequest.getEmail());
 	        return new ApiResult<>(HttpStatus.OK.value(), "Verification email sent successfully", "Email sent");
@@ -59,6 +59,32 @@ public class EmailController {
 	}
 
 	
+	@ApiOperation(value = "Send OTP for password change")
+	@ApiResponses(value = {
+	    @ApiResponse(code = 200, message = "Successfully sent OTP to email"),
+	    @ApiResponse(code = 500, message = "An unexpected error occurred")
+	})
+	@RequestMapping(value = "/sendpasswordchangeotp", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ApiResult<String> sendOtpEmailForPasswordChange(@RequestBody EmailVerifyPojo emailRequest) {
+	    try {
+	        // Generate OTP
+	        String otp = mailService.generateAndSendOtp(emailRequest.getEmail(), MailOtpPurpose.PASSWORD_CHANGE.getCode());
+	        
+	        // Log and return success message
+	        logger.info("password change otp email sent to " + emailRequest.getEmail());
+	        return new ApiResult<>(HttpStatus.OK.value(), "Change password OTP  sent successfully", "Email sent");
+
+	    } catch (CustomException e) {
+	        // Handle custom exceptions
+	        logger.error("Error sending email to " + emailRequest.getEmail(), e);
+	        return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error sending OTP email: " + e.getMessage(), null);
+	    } catch (Exception e) {
+	        // Catch all other exceptions
+	        logger.error("Unexpected error while sending email", e);
+	        return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+	    }
+	}
+	
 	
 	@ApiOperation(value = "Verify OTP for email")
 	@ApiResponses(value = {
@@ -69,6 +95,7 @@ public class EmailController {
 	@RequestMapping(value = "/verify-otp", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<String> verifyOtp(@RequestBody EmailVerifyPojo otpVerificationRequest) {
 	    try {
+	    	logger.info("verify-otp controller "+otpVerificationRequest.getEmail());
 	        boolean isValid = mailService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
 	        if (isValid) {
 	            return new ApiResult<>(HttpStatus.OK.value(), "OTP verified successfully", "Verification successful");

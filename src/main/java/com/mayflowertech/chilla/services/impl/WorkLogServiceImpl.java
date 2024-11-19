@@ -62,6 +62,8 @@ public class WorkLogServiceImpl implements IWorkLogService {
 	    	workLog.setBookingRequest(br);
 	    }
 	    
+	    workLog.setWorkStartTime(LocalDateTime.now());
+	    /*
 	    if (workLog.getWorkStartTime() == null) {
 	    	workLog.setWorkStartTime(LocalDateTime.now());
 	    }else {
@@ -69,6 +71,7 @@ public class WorkLogServiceImpl implements IWorkLogService {
 		        throw new CustomException("Work start time cannot be in the future");
 		    }	    	
 	    }
+	    */
 	    
 	    
 	    

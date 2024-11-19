@@ -3,6 +3,7 @@ package com.mayflowertech.chilla.entities.pojo;
 public class ResetPasswordPojo {
 	private String email;
 	private String password;
+
 	
 	public String getEmail() {
 		return email;
@@ -16,5 +17,7 @@ public class ResetPasswordPojo {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	
 	
 }

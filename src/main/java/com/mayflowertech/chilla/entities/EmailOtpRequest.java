@@ -1,15 +1,14 @@
 package com.mayflowertech.chilla.entities;
 
 import java.io.Serializable;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
@@ -19,23 +18,87 @@ import org.hibernate.annotations.Proxy;
 @Table(name = "emailotp")
 public class EmailOtpRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
+
 	@Id
-	@Column(name = "id", length = 50,updatable = false, nullable = false)
-	@org.hibernate.annotations.Type(type = "pg-uuid")
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private UUID id;
-	
-    @Column(name = "email", nullable = false, length = 150)
-    private String email;
-    
-	@ManyToOne
-	@JoinColumn(name = "user_id") 
-	private User requestedUser;
-	
-    @Column(name = "otp", nullable = false, length = 25)
-    private String otp;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "status", nullable = true, length = 25)
-    private String status;
+	@Column(name = "email", nullable = false, length = 30)
+	private String email;
 
+	@Column(name = "otp", nullable = false, length = 10)
+	private String otp;
+
+	@Column(name = "createdAt", updatable = false)
+	private LocalDateTime createdAt;
+
+	@Column(name = "verifiedAt")
+	private LocalDateTime verifiedAt;
+
+	@Column(name = "status", nullable = true, length = 25)
+	private String status;
+	
+	   @PrePersist
+	    protected void onCreate() {
+	        createdAt = LocalDateTime.now();
+	    }
+
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getOtp() {
+		return otp;
+	}
+
+	public void setOtp(String otp) {
+		this.otp = otp;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getVerifiedAt() {
+		return verifiedAt;
+	}
+
+	public void setVerifiedAt(LocalDateTime verifiedAt) {
+		this.verifiedAt = verifiedAt;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public boolean isExpired(int validityDurationMinutes) {
+		return createdAt.plusMinutes(validityDurationMinutes).isBefore(LocalDateTime.now());
+	}
+
+	
+	@Override
+	public String toString() {
+		return "otp="+otp+"  email="+email;
+	}
 }

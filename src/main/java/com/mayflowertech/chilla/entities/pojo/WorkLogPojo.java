@@ -2,12 +2,14 @@ package com.mayflowertech.chilla.entities.pojo;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.mayflowertech.chilla.entities.BookingRequest;
 import com.mayflowertech.chilla.entities.Student;
 
 public class WorkLogPojo {
-	
+	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private Long logId;
 	
     private Student student;
@@ -34,15 +36,17 @@ public class WorkLogPojo {
 	public void setWorkDescription(String workDescription) {
 		this.workDescription = workDescription;
 	}
-	public LocalDateTime getWorkStartTime() {
-		return workStartTime;
-	}
+    public String getWorkStartTime() {
+        return workStartTime != null ? workStartTime.format(formatter) : null;
+    }
+    
 	public void setWorkStartTime(LocalDateTime workStartTime) {
 		this.workStartTime = workStartTime;
 	}
-	public LocalDateTime getWorkEndTime() {
-		return workEndTime;
-	}
+    public String getWorkEndTime() {
+        return workEndTime != null ? workEndTime.format(formatter) : null;
+    }
+    
 	public void setWorkEndTime(LocalDateTime workEndTime) {
 		this.workEndTime = workEndTime;
 	}

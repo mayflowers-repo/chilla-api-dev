@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "chilla-karuthal",
+  "private_key_id": "4336b3d6a3f1b0786ed18c539a21b4de794ea6c1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyT5KmtOm40xO7\nCH4QHrOnlW7M5UREtNzEKJ5SFihhOG8wxYcxboQT67cgYEQ4tvK9Yj6I7v5dsDEe\ngEQnbtWgAWzrbWPEenWAvHnDuJZDus9HcXMuVWy7/VGoOSyodsy1wGZ7DUXTpyN8\nv1M5FK6hIKcdZFWsUPmaXukRc8/cLsJ496ecBU6FdDpAl1OU+uW8J2vriG7m/1gU\nIkI3G/qMhnPxi7fzvDt9x5dACzO2D9UWVBECk34TTHGs3KnUyEpF8Zv8W7I7kNcB\n3QpgmYqnnLccUPCF7KYfqffHqYnhtY/WHFJw8lL6nyQbSMl93Rr+rkQ9+X7EDca/\n5NqyMvUrAgMBAAECggEAI35mdUu+2H0fyNO8cE4EOgArcZrTl4+fAGcLeNCTUiLv\nMzimnCbhIKwDpGy1N8rnD96+Dvjv5ktbw7QJnQXZfUO7YDPCr8ommK0r2dNlCe9m\nMlT5dggoIFWhCwjyhEg9oJI/dBAkzahQDpVxJgQhbM54pYei7C2kOd/ZqhExF6Vc\nF1vkEJTmIKT4jA5edcbK+r+7PD92JjHfMdxuJnIuaVYXD4SFiuU4ea/q0s/l5pKo\narJmhxrHENyuBijWrXsN1Zr8uuG6FDUbMHWTckgI+cvO680lLubWTqsru3fhHVkk\nEgcRP6ixMz8vAucTSIxt5WpI7SrFPTAs6Q4aFn3HMQKBgQDbRQRsxY1G+z2dJFwY\nBcxmsjnYOJjqqisNRh7nftOxk6ZiT4rE9C8YmtQSmM+bK1+72knkTjDyWN4gEPVR\ngqwWxay5wq/DqO9YEilsRkAqxUi9Gns2tdfJLYZUPjkvMVL2yBkWkI5f2Z2MrA92\nuZRmfXIjD5ItCsfyt9bFLWby0QKBgQDQLhzIy600k0SIbSuwv60r6Yt/lczsECpd\nFF8EH4uRQ+f6rk5c/LDfmVNUj6GL1gWWzxfMf+zM+97zaLBQUV6mgI6faM7zeFxp\ns8kWcpZNBPBDwqpFBZrCwg1MnH3BbI0TJk3RX+psYm8Egrzn52LxZmVhr2BBrqXz\n4EcWf4LPOwKBgQCToynyjyWr+Hio+RVlO2pAb5qRIrKbts5cFq2yU2v4ciEiqsoW\nCRA48e7/QpLuuMqx8q20Io3Eb9/IGYMESgbTInBFd3ffNz1IwJnRhI+p/MIYSd9S\nnCfaFmQPDwJz6zMgZOS3k8e5dA4n7KZQ2223gJm8T7ytxUeR/wSGKSbbMQKBgAr5\nk1zml/AAn4lNsBL2V+vLuSX1wMLlK0aS71tpSlNTMCSgEdOHIs/25lS76blUhCDq\nNAf86n/3+037w+fIEmRWvK4cuWROgRi1eLFtQw02aHA6D/3piLohvs++JEcRMPLE\nfy+9jb8/BTlIpyrWoPm2+ztGIp3z1h3gQf8mo7/HAoGAcd9Mtc88CmxuU3wDsGSg\n00oEVakUFsIi2HyVAuN6gF43PaOEM5Hm78einH6aABd3GsLulAgAyr47S/ArcPZp\nfxeTtS6bMOrE0iuYBNv3iidi0R6Ce1VMYlmMgKmnsAzzbGkrlp/IbQfUsbFteNtA\nuracBVz8wbHuky4oK6bZL1s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "storage-service-acc-karuthal@chilla-karuthal.iam.gserviceaccount.com",
+  "client_id": "103699650056402904678",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/storage-service-acc-karuthal%40chilla-karuthal.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -17,7 +17,7 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "address", uniqueConstraints=
 @UniqueConstraint(columnNames={"map"}))
-public class Address extends BaseEntity {
+public class Address {
 
 	@Id
 	@Column(name = "id", length = 50,updatable = false, nullable = false)

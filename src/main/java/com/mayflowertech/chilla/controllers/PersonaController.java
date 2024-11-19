@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,12 +63,18 @@ public class PersonaController {
 	    logger.info("signup API: " + persona);
 	    try {
 	        User user = personaService.signUpUser(persona);
+		      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
+		      jacksonFilterConfig.applyFilters("ManagerFilter", "managerId", "registeredUser");
+		      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
+		      jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
 	        return new ApiResult<>(HttpStatus.OK.value(), "User saved successfully.", user);
 	    } catch (CustomException e) {
 	        return new ApiResult<>(HttpStatus.NOT_ACCEPTABLE.value(), e.getMessage(), null);
 	    } catch (Throwable e) {
 	        e.printStackTrace();
 	        return new ApiResult<>(HttpStatus.NOT_ACCEPTABLE.value(), e.getMessage(), null);
+	    }finally {
+	    	  jacksonFilterConfig.clearFilters(); 
 	    }
 	}
 
@@ -83,10 +90,15 @@ public class PersonaController {
 
 	    try {      
 	      logger.info("registering customer "+customer);
+	      
 	      Customer newCustomer = userService.registerCustomer(customer);
+	      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
+	      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	    } catch (Throwable e) {
 	      e.printStackTrace();
 	      return new ApiResult<CustomerPojo>(HttpStatus.NOT_ACCEPTABLE.value(), e.getMessage(), customer);  
+	    }finally {
+	    	  jacksonFilterConfig.clearFilters(); 
 	    }
 	    return new ApiResult<CustomerPojo>(HttpStatus.OK.value(), "User saved successfully.", customer);
 	    
@@ -105,10 +117,16 @@ public class PersonaController {
 		  Patient newPatient = null;
 	    try {      
 	      logger.info("enrolling patient "+patient.getEmail());
+	      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
+	      jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "registeredUser");
+	      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	      newPatient = userService.enrollPatient(patient);
+	      patient.setPatientId(newPatient.getPatientId());
 	    } catch (Throwable e) {
 	      e.printStackTrace();
 	      return new ApiResult<PatientPojo>(HttpStatus.NOT_ACCEPTABLE.value(), e.getMessage(), patient);  
+	    }finally {
+	    	  jacksonFilterConfig.clearFilters(); 
 	    }
 	    return new ApiResult<PatientPojo>(HttpStatus.OK.value(), "Patient enrolled successfully.", patient);
 	    
@@ -116,7 +134,7 @@ public class PersonaController {
 
 
 	  
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "View a list of all users")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -133,7 +151,7 @@ public class PersonaController {
 
 	          // Return success response with users list
 	          ApiResult<List<User>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved users", users);
-	          jacksonFilterConfig.printExistingFilters();
+		      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
 	          return apiResult;
 
 	      } catch (Exception ex) {
@@ -145,7 +163,7 @@ public class PersonaController {
 	      }
 	  }
 
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})	  
 	  @ApiOperation(value = "View a list of all customers")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -163,7 +181,7 @@ public class PersonaController {
 	          // Return success response with customers list
 	          ApiResult<List<Customer>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved customers", customers);
 	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-	          jacksonFilterConfig.applyFilters("CustomerFilter", "id", "registeredUser");
+	          jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	          return apiResult;
 
 	      } catch (Exception ex) {
@@ -176,7 +194,7 @@ public class PersonaController {
 	  }
 
 
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})	  
 	  @ApiOperation(value = "View a list of all managers")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -191,8 +209,8 @@ public class PersonaController {
 	          List<Manager> managers = personaService.listManagers();
 	          logger.info("GET managers");
 
-	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-	          jacksonFilterConfig.applyFilters("ManagerFilter", "id", "registeredUser");
+	          jacksonFilterConfig.applyFilters("UserFilter", "username", "email");
+	          jacksonFilterConfig.applyFilters("ManagerFilter", "managerId", "registeredUser");
 	          // Return success response with managers list
 	          ApiResult<List<Manager>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved managers", managers);
 	          return apiResult;
@@ -207,7 +225,7 @@ public class PersonaController {
 	  }
 
 	  
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "View a list of all students")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -224,8 +242,8 @@ public class PersonaController {
 
 	          // Return success response with students list
 	          ApiResult<List<Student>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved students", students);
-	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-	          jacksonFilterConfig.applyFilters("StudentFilter", "id", "registeredUser");
+	          jacksonFilterConfig.applyFilters("UserFilter", "username", "email");
+	          jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
 	          return apiResult;
 
 	      } catch (Exception ex) {
@@ -237,7 +255,7 @@ public class PersonaController {
 	      }
 	  }
 
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "View a list of all patients")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -254,8 +272,8 @@ public class PersonaController {
 
 	          // Return success response with patients list
 	          ApiResult<List<Patient>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved patients", patients);
-	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-	          jacksonFilterConfig.applyFilters("PatientFilter", "id", "registeredUser");
+	          jacksonFilterConfig.applyFilters("UserFilter", "username", "email");
+	          jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "registeredUser");
 	          return apiResult;
 
 	      } catch (Exception ex) {
@@ -268,7 +286,7 @@ public class PersonaController {
 	  }
 
 	  
-	  
+	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_SYSTEMADMIN"})
 	  @ApiOperation(value = "View a list of patients enrolled by a specific customer")
 	  @ApiResponses(value = {
 	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -285,13 +303,22 @@ public class PersonaController {
 
 	          // Return success response with patients list
 	          ApiResult<List<Patient>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved patients", patients);
+	          
+		      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
+		      jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "registeredUser");
+		      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	          return apiResult;
 
 	      } catch (Exception ex) {
 	          logger.error("Error: An unexpected error occurred while retrieving patients for customer ID: {}", customerId, ex);
 	          // Return error response for general server error
 	          return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+	      }finally {
+	    	  jacksonFilterConfig.clearFilters(); 
 	      }
 	  }
+	  
+	  
+	  
 
 }

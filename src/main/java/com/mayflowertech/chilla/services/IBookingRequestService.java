@@ -15,6 +15,6 @@ public interface IBookingRequestService {
 	public List<BookingRequest> listBookingRequestsByCustomer(Long customerId) throws CustomException;
 	
 	BookingRequest getBookingRequestById(Long id) throws CustomException;	
-    List<BookingRequest> getBookingRequestsByStatus(BookingStatus status) throws CustomException;
+    List<BookingRequest> getBookingRequestsByStatus(String status) throws CustomException;
     List<BookingRequest> getBookingRequestsCreatedBetween(Date startDate, Date endDate) throws CustomException;
 }

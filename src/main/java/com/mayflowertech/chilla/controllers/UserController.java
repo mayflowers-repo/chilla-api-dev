@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -58,6 +59,7 @@ import com.mayflowertech.chilla.services.impl.UserProfileService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -95,6 +97,8 @@ public class UserController {
   @Autowired
   private JacksonFilterConfig jacksonFilterConfig;
 
+
+  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "Successfully retrieved list"),
       @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -185,13 +189,21 @@ public class UserController {
                           e.printStackTrace();
                           return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error assigning student ID", null);
                       }
+                  } else if (SystemRoles.CUSTOMER.getRoleCode().equals(role.getRolename())) {
+                	  try {
+                          Long idForRole = userService.getCustomerId(user);
+                          user.setCustomerId(idForRole);
+                      } catch (CustomException e) {
+                          e.printStackTrace();
+                          return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error assigning customer ID", null);
+                      }
                   }
               }
 
               // Set assigned roles
               user.setAssignedRoles(assignedRoles);
-              jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "active", "firstName", "lastName", 
-            		  "authtoken", "assignedRoles", "status", "mobile", "studentId", "managerId", "otpWaiting", "registered");
+              jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "active", "firstName", "lastName", "photoUrl",
+            		  "authtoken", "assignedRoles", "status", "mobile", "studentId", "managerId", "customerId", "otpWaiting", "registered");
               jacksonFilterConfig.printExistingFilters();
               logger.info(user.getUsername() + " successfully logged in " + assignedRoles);
               return new ApiResult<>(HttpStatus.OK.value(), "Login successful", user);
@@ -313,7 +325,7 @@ public class UserController {
   }
   
   
-
+  @ApiIgnore
   @ApiOperation(value = "List permissions for a user")
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Listed user permissions"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -332,6 +344,7 @@ public class UserController {
   }
   
   
+  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
   @ApiOperation(value = "List roles in the system")
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Listed ALL user roles"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -352,7 +365,7 @@ public class UserController {
     
   }
   
-  
+  @ApiIgnore
   @ApiOperation(value = "Retrieve user details for an user", response = User.class)
   @ApiResponses(value = {@ApiResponse(code = 202, message = "retrieved user details"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -412,7 +425,7 @@ public class UserController {
     return new ApiResult<User>(HttpStatus.OK.value(), "Successully updated the user details", user);
   }
 
-  
+  @ApiIgnore
   @ApiOperation(value = "Retrieve user profile photo for an user", response = UserProfile.class)
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Retrieved user photo details"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -447,6 +460,7 @@ public class UserController {
 	    
   }
 
+  @ApiIgnore
   @ApiOperation(value = "Add/update user profile photo for an user", response = UserProfile.class)
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -477,6 +491,9 @@ public class UserController {
             HttpStatus.OK);
   }
 
+  
+  @ApiIgnore
+  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
   @ApiOperation(value = "Activate a particular user")
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -496,6 +513,8 @@ public class UserController {
   }
 
 
+  @ApiIgnore
+  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
   @ApiOperation(value = "Deactivate a particular user")
   @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
       @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
@@ -525,8 +544,7 @@ public class UserController {
   
   
   
-  
-  
+  @ApiIgnore  
   @ApiOperation(value = "Forgot Password for an user", response = User.class)
   @ApiResponses(value = {
           @ApiResponse(code = 202, message = "Successfully send email link to reset password"),
@@ -599,7 +617,7 @@ public class UserController {
   
   }
 
-  
+ 
   @ApiOperation(value = "Reset Password", response = ApiResult.class)
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Password reset successful"),
@@ -613,10 +631,12 @@ public class UserController {
       try {
           // Call the service to process the password reset based on email and password
           userWithToken = userService.changePassword(request);
-          logger.info("Password reset successful for user: {}", request.getEmail());
+          logger.info("Password reset successful for user: {}   with token={}", request.getEmail(), userWithToken.getAuthtoken());
           
           // Return the result wrapped in ApiResult
-          return new ApiResult<>(HttpStatus.OK.value(), "Password reset successful", userWithToken);
+          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "active",
+        		  "authtoken", "status", "otpWaiting", "registered");
+          return new ApiResult<User>(HttpStatus.OK.value(), "Password reset successful", userWithToken);
           
       } catch (CustomException e) {
           // Handle exception and log the error
@@ -624,11 +644,13 @@ public class UserController {
           
           // Optionally, customize the response in case of failure
           return new ApiResult<>(HttpStatus.BAD_REQUEST.value(), "Password reset failed: " + e.getMessage(), null);
+      }finally {
+    	  jacksonFilterConfig.clearFilters();
       }
   }
 
 
-
+  @ApiIgnore
   @RequestMapping(value = "/usermanagement/verifyGoogleIdToken", method = {RequestMethod.POST},
 	      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> verifyGoogleIdToken(@RequestBody GoogleTokenInfo idToken) {
@@ -652,6 +674,7 @@ public class UserController {
   }
   
   private final String GOOGLE_TOKENINFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
+  @ApiIgnore
   @PostMapping("/usermanagement/verifyGoogleIdTokenDart")
   public ResponseEntity<?> verifyGoogleIdToken(@RequestBody Map<String, String> requestBody) {
 	  logger.info("verifyGoogleIdTokenDart=");

@@ -120,11 +120,17 @@ public class WorkLogController {
         	logger.info("getLatestUnfinishedWorkLog "+studentId);
             WorkLog workLog = workLogService.getLatestUnfinishedWorkLog(studentId);
             WorkLogPojo workLogPojo = convertToPojo(workLog);
+            jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "firstName", "lastName");
+            jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
+            jacksonFilterConfig.applyFilters("BookingRequestFilter", "id", "username", "email", "description");
+			jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "registeredUser", "age", "gender", "firstName", "lastName", "healthDescription");
             return new ApiResult<>(HttpStatus.OK.value(), "Work log retrieved successfully", workLogPojo);
         } catch (CustomException e) {
             return new ApiResult<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
         } catch (Exception e) {
             return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+        }finally {
+        	jacksonFilterConfig.clearFilters();
         }
     }
     

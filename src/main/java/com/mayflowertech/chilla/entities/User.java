@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -16,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -384,6 +386,31 @@ public class User extends BaseEntity implements UserDetails {
 
 	public void setRegistered(boolean registered) {
 		this.registered = registered;
+	}
+
+	
+	@Transient
+	private Long customerId;
+
+	public Long getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Long customerId) {
+		this.customerId = customerId;
+	}
+	
+	
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<AddressProofDocument> documents = new HashSet<>();
+
+	public Set<AddressProofDocument> getDocuments() {
+	    return documents;
+	}
+
+	public void setDocuments(Set<AddressProofDocument> documents) {
+	    this.documents = documents;
 	}
 
 }

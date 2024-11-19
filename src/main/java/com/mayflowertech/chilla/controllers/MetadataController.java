@@ -1,13 +1,14 @@
 package com.mayflowertech.chilla.controllers;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,6 +19,7 @@ import com.mayflowertech.chilla.entities.Country;
 import com.mayflowertech.chilla.entities.District;
 import com.mayflowertech.chilla.entities.PersonalizedService;
 import com.mayflowertech.chilla.entities.State;
+import com.mayflowertech.chilla.enums.PatientRelation;
 import com.mayflowertech.chilla.services.IMetadataService;
 
 import io.swagger.annotations.ApiOperation;
@@ -163,4 +165,33 @@ public class MetadataController {
 	}
 
 
+	@ApiOperation(value = "View a list of all relations")
+	@ApiResponses(value = {
+	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
+	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
+	    @ApiResponse(code = 500, message = "Internal server error")
+	})
+	@RequestMapping(value = "/patientrelations", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ApiResult<List<String>> getPatientRelations() {
+	    try {
+	        logger.info("GET relations");
+            List<String> relations = Arrays.stream(PatientRelation.values())
+                    .map(PatientRelation::getCode)
+                    .collect(Collectors.toList());
+
+	        
+	        // Return success response with countries list
+	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved countries", relations);
+	        return apiResult;
+
+	    } catch (Exception ex) {
+	        logger.error("Error: An unexpected error occurred while retrieving relations", ex);
+	        // Return error response for general server error
+	        return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+	    }
+	}
+
+	
 }

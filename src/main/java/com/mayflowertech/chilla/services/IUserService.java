@@ -40,6 +40,7 @@ public interface IUserService {
     public Patient enrollPatient(PatientPojo patient) throws Throwable;
     public Manager registerManager(ManagerPojo manager) throws Throwable;
     public Long getManagerId(User user) throws CustomException;
+    public Long getCustomerId(User user) throws CustomException;
     public Long getStudentId(User user) throws CustomException;
     public User updateUserStatus(UUID id, String newStatus) throws CustomException;
     User changePassword(ResetPasswordPojo pojo) throws CustomException;

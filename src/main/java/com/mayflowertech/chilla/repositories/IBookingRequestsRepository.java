@@ -13,7 +13,7 @@ import com.mayflowertech.chilla.enums.BookingStatus;
 public interface IBookingRequestsRepository extends JpaRepository<BookingRequest, Long> {
 	List<BookingRequest> findByEnrolledByCustomer(Customer customer);
 	List<BookingRequest> findByCreatedOnBetween(Date startDate, Date endDate);
-	List<BookingRequest> findByStatus(BookingStatus status);
+	List<BookingRequest> findByStatus(String status);
 	
 	 List<BookingRequest> findByAssignedStudentsContaining(Student student);
 }

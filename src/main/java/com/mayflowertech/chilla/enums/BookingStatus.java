@@ -2,7 +2,7 @@ package com.mayflowertech.chilla.enums;
 
 public enum BookingStatus {
 
-	PENDING("Pending"), ASSIGNED("Assigned"), COMPLETED("Completed"), REJECTED("Rejected"), TERMINATED("Terminated");
+	PENDING("PENDING"), ASSIGNED("ASSIGNED"), COMPLETED("COMPLETED"), REJECTED("REJECTED"), TERMINATED("TERMINATED");
 
 	private final String code;
 

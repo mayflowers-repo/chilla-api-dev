@@ -2,7 +2,7 @@ package com.mayflowertech.chilla.enums;
 
 
 public enum UserStatus {
-	  ACTIVE("Active"), INACTIVE("Inactive"), WAITING("Waiting");
+	  ACTIVE("Active"), INACTIVE("Inactive"), WAITING("Waiting"), REJECTED("Rejected");
 
 	  private final String code;
 

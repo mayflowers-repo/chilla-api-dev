@@ -11,4 +11,8 @@ public interface Constants {
     public static final String PASSWORD_SALT = "1nGiN1M1nGiN1M1nGiN1M";
     public static final String INITIAL_PASSWORD = "abcd";
     public static final String TEST_OTP = "123456";
+    
+    public static final String GCP_BUCKET_NAME = "karuthal-docubucket1";
+    
+    
 }

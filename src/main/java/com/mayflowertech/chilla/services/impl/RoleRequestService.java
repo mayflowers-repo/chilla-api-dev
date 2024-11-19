@@ -71,6 +71,12 @@ public class RoleRequestService implements IRoleRequestService{
 	    roleRequest.setApprovedBy(approvedBy); 
 	    roleRequest.setApprovalDate(LocalDateTime.now()); 
 	    
+	    if(RoleRequestStatus.REJECTED.getCode().equalsIgnoreCase(status)) {
+	    	logger.info("rejecting role request");	  
+		    userService.updateUserStatus(roleRequest.getRequestedByUser().getId(), UserStatus.REJECTED.getCode());
+	    	 return roleRequestRepository.save(roleRequest); 
+	    }
+	    
 	    userService.updateUserStatus(roleRequest.getRequestedByUser().getId(), UserStatus.ACTIVE.getCode());
 	    
 	    if(SystemRoles.STUDENT.getRoleCode().equalsIgnoreCase(roleRequest.getRequestedRole())) {
