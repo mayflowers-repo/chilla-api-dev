@@ -48,9 +48,8 @@ public class BookingRequest extends BaseEntity implements Serializable {
     )    
 	private List<PersonalizedService> requestedServices;
 	
-    @Enumerated(EnumType.STRING)
     @Column(name = "preferred_gender", nullable = true)
-	private Gender preferredGender;
+	private String preferredGender;
 			
     
 	@Column(name = "description", length = 50)
@@ -91,12 +90,12 @@ public class BookingRequest extends BaseEntity implements Serializable {
 	}
 
 
-	public Gender getPreferredGender() {
+	public String getPreferredGender() {
 		return preferredGender;
 	}
 
 
-	public void setPreferredGender(Gender preferredGender) {
+	public void setPreferredGender(String preferredGender) {
 		this.preferredGender = preferredGender;
 	}
 

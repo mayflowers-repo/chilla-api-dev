@@ -109,7 +109,7 @@ public class PersonaService implements IPersonaService{
 			user.setFirstName(persona.getFirstName());
 			user.setLastName(persona.getLastName());
 			user.setOtpWaiting(true);
-			
+			user.setMobile(persona.getMobile());
 			user.setPassword(Constants.INITIAL_PASSWORD);
 			
 			// Set password based on persona

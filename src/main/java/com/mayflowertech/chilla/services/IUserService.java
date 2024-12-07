@@ -33,7 +33,7 @@ public interface IUserService {
 	User removeRolefromUser(User user, Role role);
 	String generatePasswordResetLink(User user, String uri);
 	User getUserFromSignature(String signature);
-    User checkSocialUser(User user);
+    User checkSocialUser(User user) throws CustomException;
     
     public Customer registerCustomer(CustomerPojo customer) throws Throwable;
     public Student registerStudent(StudentPojo student) throws Throwable;

@@ -14,10 +14,14 @@ public class PatientPojo {
 	private Gender gender;
 	private String healthDescription;
 	private String email;
+	private String mobile;
 	private String firstName;
 	private String lastName;
 	private Customer enrolledBy;
 	private PatientRelation relationWithPatient;
+
+	
+	private AddressPojo address;
 	
 	public PatientPojo(Patient patient) {
 		this.patientId = patient.getPatientId();
@@ -25,7 +29,6 @@ public class PatientPojo {
 		this.lastName = patient.getLastName();
 		this.age = patient.getAge();
 		this.gender = patient.getGender();
-		//this.email = patient.getRegisteredUser().getEmail();
 	}
 	
 	public PatientPojo() {
@@ -55,12 +58,7 @@ public class PatientPojo {
 	public void setGender(Gender gender) {
 		this.gender = gender;
 	}
-	public String getHealthDescription() {
-		return healthDescription;
-	}
-	public void setHealthDescription(String healthDescription) {
-		this.healthDescription = healthDescription;
-	}
+
 	public String getEmail() {
 		return email;
 	}
@@ -86,6 +84,33 @@ public class PatientPojo {
 		this.enrolledBy = enrolledBy;
 	}
 
+
+	public String getHealthDescription() {
+		return healthDescription;
+	}
+
+	public void setHealthDescription(String healthDescription) {
+		this.healthDescription = healthDescription;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+
+	public AddressPojo getAddress() {
+		return address;
+	}
+
+	public void setAddress(AddressPojo address) {
+		this.address = address;
+	}
+
+
 	public PatientRelation getRelationWithPatient() {
 		return relationWithPatient;
 	}
@@ -93,7 +118,8 @@ public class PatientPojo {
 	public void setRelationWithPatient(PatientRelation relationWithPatient) {
 		this.relationWithPatient = relationWithPatient;
 	}
-	
+
+
 	
 	
 }

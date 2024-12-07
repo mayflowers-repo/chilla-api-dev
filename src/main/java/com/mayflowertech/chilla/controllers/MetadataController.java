@@ -12,11 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.ApiResult;
 import com.mayflowertech.chilla.entities.Country;
-import com.mayflowertech.chilla.entities.District;
 import com.mayflowertech.chilla.entities.PersonalizedService;
 import com.mayflowertech.chilla.entities.State;
 import com.mayflowertech.chilla.enums.PatientRelation;
@@ -44,13 +45,20 @@ public class MetadataController {
 	    @ApiResponse(code = 500, message = "Internal server error")
 	})
 	@RequestMapping(value = "/countries", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ApiResult<List<Country>> getCountries() {
+	public ApiResult<List<String>> getCountries() {
 	    try {
 	        logger.info("GET countries");
-	        List<Country> countries = metadataService.getCountries();
 	        
-	        // Return success response with countries list
-	        ApiResult<List<Country>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved countries", countries);
+	        // Fetch the list of countries
+	        List<Country> countries = metadataService.getCountries();
+
+	        // Map the list of Country objects to a list of country names (String)
+	        List<String> countryNames = countries.stream()
+	                                             .map(Country::getName) // Assuming `getName` is the method to get country name
+	                                             .collect(Collectors.toList());
+
+	        // Return success response with country names
+	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved countries", countryNames);
 	        return apiResult;
 
 	    } catch (Exception ex) {
@@ -61,7 +69,7 @@ public class MetadataController {
 	}
 
 
-	
+
 	@ApiOperation(value = "View a list of all states")
 	@ApiResponses(value = {
 	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -71,13 +79,20 @@ public class MetadataController {
 	    @ApiResponse(code = 500, message = "Internal server error")
 	})
 	@RequestMapping(value = "/states", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ApiResult<List<State>> getStates() {
+	public ApiResult<List<String>> getStates() {
 	    try {
 	        logger.info("GET states");
+	        
+	        // Get the list of states from metadataService
 	        List<State> states = metadataService.getStates(null);
 	        
-	        // Return success response with states list
-	        ApiResult<List<State>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved states", states);
+	        // Map the list of State objects to a list of State names (String)
+	        List<String> stateNames = states.stream()
+	            .map(State::getName) // Assuming the State class has a getName() method
+	            .collect(Collectors.toList());
+
+	        // Return success response with the list of state names
+	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved states", stateNames);
 	        return apiResult;
 
 	    } catch (Exception ex) {
@@ -87,7 +102,7 @@ public class MetadataController {
 	    }
 	}
 
-
+	
 	@ApiOperation(value = "View a list of all districts")
 	@ApiResponses(value = {
 	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
@@ -97,20 +112,28 @@ public class MetadataController {
 	    @ApiResponse(code = 500, message = "Internal server error")
 	})
 	@RequestMapping(value = "/districts", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ApiResult<List<District>> getDistricts() {
+	public ApiResult<List<String>> getDistricts(
+		    @RequestParam(value = "stateName", required = true) String stateName  // Adding query parameter for stateName
+		) {
 	    try {
-	        logger.info("GET districts");
-	        List<District> districts = metadataService.getDistricts(null);
+	        logger.info("GET districts for "+stateName);
+	        State state = new State();
+	        if(stateName == null || stateName.isEmpty()) {
+	        	stateName = "KERALA";
+	        }
+	        state.setName(stateName);
+	        List<String> districts = metadataService.getDistricts(state);
 	        
 	        // Return success response with districts list
-	        ApiResult<List<District>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved districts", districts);
+	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved districts", districts);
 	        return apiResult;
 
+	    } catch (CustomException e) {
+	        return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
 	    } catch (Exception ex) {
 	        logger.error("Error: An unexpected error occurred while retrieving districts", ex);
-	        // Return error response for general server error
 	        return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
-	    }
+		}
 	}
 
 
@@ -177,13 +200,12 @@ public class MetadataController {
 	public ApiResult<List<String>> getPatientRelations() {
 	    try {
 	        logger.info("GET relations");
-            List<String> relations = Arrays.stream(PatientRelation.values())
-                    .map(PatientRelation::getCode)
+	        List<String> relations = Arrays.stream(PatientRelation.values())
+                    .map(PatientRelation::name) 
                     .collect(Collectors.toList());
-
 	        
 	        // Return success response with countries list
-	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved countries", relations);
+	        ApiResult<List<String>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved relations", relations);
 	        return apiResult;
 
 	    } catch (Exception ex) {
@@ -193,5 +215,6 @@ public class MetadataController {
 	    }
 	}
 
+	
 	
 }

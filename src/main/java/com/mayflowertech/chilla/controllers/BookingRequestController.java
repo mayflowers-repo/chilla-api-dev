@@ -196,12 +196,19 @@ public class BookingRequestController {
     	 try {
     		 logger.info("fetch a booking request "+id);
              BookingRequest bookingRequest = bookingRequestService.getBookingRequestById(id);
+             jacksonFilterConfig.applyFilters("BookingRequestFilter", "id", "enrolledByCustomer", "requestedServices", 
+   					"preferredGender", "description", "requestedFor", "status", "assignedStudents", "assignedByManager");
+             jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "firstName", "lastName");
+             jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "firstName", "lastName", "age", "gender", "healthDescription");
+             jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
              return new ApiResult<>(HttpStatus.OK.value(), "Booking request retrieved successfully.", bookingRequest);
          } catch (CustomException e) {
              return new ApiResult<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
-         } catch (Exception e) {
+         } catch (Throwable e) {
              return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An error occurred.", null);
-         }
+         }finally {
+	    	  jacksonFilterConfig.clearFilters();
+	    }
     }
     
     // 5. Fetch booking requests by status

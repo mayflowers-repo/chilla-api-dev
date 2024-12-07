@@ -26,23 +26,26 @@ import com.mayflowertech.chilla.config.AuthorizationConstants;
 import com.mayflowertech.chilla.config.Constants;
 import com.mayflowertech.chilla.config.JwtAuthorizationProvider;
 import com.mayflowertech.chilla.config.custom.CustomException;
+import com.mayflowertech.chilla.entities.Address;
+import com.mayflowertech.chilla.entities.Country;
 import com.mayflowertech.chilla.entities.Customer;
 import com.mayflowertech.chilla.entities.Manager;
 import com.mayflowertech.chilla.entities.Patient;
 import com.mayflowertech.chilla.entities.Role;
 import com.mayflowertech.chilla.entities.Student;
 import com.mayflowertech.chilla.entities.User;
+import com.mayflowertech.chilla.entities.pojo.AddressPojo;
 import com.mayflowertech.chilla.entities.pojo.CustomerPojo;
 import com.mayflowertech.chilla.entities.pojo.ManagerPojo;
 import com.mayflowertech.chilla.entities.pojo.PatientPojo;
 import com.mayflowertech.chilla.entities.pojo.ResetPasswordPojo;
 import com.mayflowertech.chilla.entities.pojo.StudentPojo;
-import com.mayflowertech.chilla.enums.MailOtpPurpose;
 import com.mayflowertech.chilla.enums.SystemRoles;
 import com.mayflowertech.chilla.enums.UserStatus;
+import com.mayflowertech.chilla.repositories.IAddressRepository;
+import com.mayflowertech.chilla.repositories.ICountryRepository;
 import com.mayflowertech.chilla.repositories.ICustomerRepository;
 import com.mayflowertech.chilla.repositories.IManagerRepository;
-import com.mayflowertech.chilla.repositories.IOtpRepository;
 import com.mayflowertech.chilla.repositories.IPatientRepository;
 import com.mayflowertech.chilla.repositories.IStudentRepository;
 import com.mayflowertech.chilla.repositories.IUserRepository;
@@ -82,6 +85,12 @@ public class UserService implements UserDetailsService, IUserService {
 
 	@Autowired
 	private IMailService mailService;
+	
+	@Autowired
+	private ICountryRepository countryRepository;
+
+	@Autowired
+	private IAddressRepository addressRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -331,10 +340,17 @@ public class UserService implements UserDetailsService, IUserService {
 	}
 
 	@Override
-	public User checkSocialUser(User user) {
+	public User checkSocialUser(User user) throws CustomException{
 
 		if (isExist(user)) {
 			user = userRepository.findByUsername(user.getUsername());
+			Optional<Customer> customerOptional =  customerRepository.findByRegisteredUser(user);
+			if(customerOptional.isPresent()) {
+				long customerId = customerOptional.get().getCustomerId();
+				user.setCustomerId(customerId);
+			}else {
+				throw new CustomException("The user yet to register as customer");
+			}
 		} else {
 			user.setPassword(PasswordUtils.generateSecurePassword(user.getSocialId(), Constants.PASSWORD_SALT));
 			Role role = roleService.getRoleByName(SystemRoles.GUEST.getRoleCode());
@@ -352,7 +368,12 @@ public class UserService implements UserDetailsService, IUserService {
 
 	@Override
 	public User getByEmail(String email) {
-		return userRepository.findByEmail(email);
+	    User user = userRepository.findByEmail(email);
+	    if (user != null) {
+	        // Ensures the addresses are loaded
+	        user.getAddresses().size(); // Forces initialization of the addresses collection
+	    }
+	    return user;
 	}
 
 	@Transactional
@@ -370,17 +391,30 @@ public class UserService implements UserDetailsService, IUserService {
 	        throw new CustomException("Customer already exists for this user");
 	    }
 
+	    Country country = countryRepository.findByName(customerPojo.getCountry());
+	    if(country == null) {
+	    	 throw new CustomException("Invalid country");
+	    }
+	    
 	    // Create a new Customer entity and set the fields from CustomerPojo
 	    Customer newCustomer = new Customer();
 	    newCustomer.setJob(customerPojo.getJob());
 	    newCustomer.setCity(customerPojo.getCity());
-	    newCustomer.setCountry(customerPojo.getCountry());
+	    newCustomer.setCountry(country);
 	    
 	    // Set the registeredUser to the existing user
 	    newCustomer.setRegisteredUser(existingUser);
-
-	    // Save the new Customer entity (only inserting into the `customers` table)
-	    return customerRepository.save(newCustomer);
+	    newCustomer = customerRepository.save(newCustomer);
+	  
+	    existingUser.setFirstName(customerPojo.getFirstName());
+	    existingUser.setLastName(customerPojo.getLastName());
+	    logger.info(customerPojo.getAddress()+"");
+	    Address address = AddressPojo.convertToAddress(customerPojo.getAddress());
+	    address = addressRepository.save(address);
+	    existingUser.addAddress(address);
+	    userRepository.save(existingUser);
+	    
+	    return newCustomer;
 	}
 
 	@Override
@@ -412,22 +446,54 @@ public class UserService implements UserDetailsService, IUserService {
 
 	@Override
 	public Patient enrollPatient(PatientPojo pojo) throws Throwable {
-		User existingUser = userRepository.findByEmail(pojo.getEmail());
-		if (existingUser != null) {
-	        throw new CustomException("User already  exist "+pojo.getEmail());
+	    logger.info("service : enrollPatient ");
+	    
+	    if (pojo.getMobile() != null && !pojo.getMobile().isEmpty()) {
+	        Optional<Patient> optionalPatient = patientRepository.findByMobile(pojo.getMobile());
+	        if (optionalPatient.isPresent()) {
+	            throw new CustomException("Patient already exists with mobile: " + pojo.getMobile());
+	        }
 	    }
-		Patient patient = new Patient();
-		patient.setAge(pojo.getAge());
-		patient.setActive(true);
-		patient.setEnrolledBy(pojo.getEnrolledBy());
-		patient.setFirstName(pojo.getFirstName());
-		patient.setLastName(pojo.getLastName());
-		patient.setHealthDescription(pojo.getHealthDescription());
-		patient.setGender(pojo.getGender());
-		patient.setRelationWithPatient(pojo.getRelationWithPatient());
-		return patientRepository.save(patient);
-		
+
+	    Patient patient = new Patient();
+	    patient.setAge(pojo.getAge());
+	    patient.setActive(true);
+	    patient.setEnrolledBy(pojo.getEnrolledBy());
+	    patient.setFirstName(pojo.getFirstName());
+	    patient.setLastName(pojo.getLastName());
+	    patient.setHealthDescription(pojo.getHealthDescription());
+	    patient.setGender(pojo.getGender());
+	    patient.setRelationWithPatient(pojo.getRelationWithPatient());
+	    patient.setEmail(pojo.getEmail());
+	    patient.setMobile(pojo.getMobile());
+
+	    // Save patient to generate ID
+	    patient = patientRepository.save(patient);
+
+	    if (pojo.getAddress() != null) {
+	        Address address = new Address();
+	        address.setFirst(pojo.getAddress().getFlatDetails());
+	        address.setSecond(pojo.getAddress().getApartmentDetails());
+	        address.setPincode(pojo.getAddress().getPincode());
+	        address.setLandmark(pojo.getAddress().getLandmark());
+	        address.setDistrict(pojo.getAddress().getDistrict());
+	        address.setState(pojo.getAddress().getState());
+	        address.setMap(pojo.getAddress().getMap());
+	        // Save address
+	        Address savedAddress = addressRepository.save(address);
+
+	        // Add address to patient
+	        patient.addAddress(savedAddress);
+
+	        // Save patient again to update the join table
+	        patient = patientRepository.save(patient);
+	        logger.info("Patient updated with address association");
+	    }
+
+	    return patient;
 	}
+
+
 	
 
 	@Override

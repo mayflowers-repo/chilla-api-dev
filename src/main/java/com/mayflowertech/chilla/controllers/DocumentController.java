@@ -89,6 +89,7 @@ public class DocumentController {
         pojo.setId(document.getId());
         pojo.setDocumentType(document.getDocumentType());
         pojo.setDocumentExtension(document.getDocumentExtension());
+        pojo.setDocumentName(document.getFilePath());
         pojo.setUserId(document.getUser().getId().toString()); 
         return pojo;
     }
@@ -123,10 +124,10 @@ public class DocumentController {
             
             return new ApiResult<>(HttpStatus.OK.value(), "Documents retrieved successfully", documentPojos);
         } catch (CustomException e) {
-        	e.printStackTrace();
+        	//e.printStackTrace();
             return new ApiResult<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
         } catch (Exception e) {
-        	e.printStackTrace();
+        	//e.printStackTrace();
             return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
         } finally {
             // Clear filters in the finally block to ensure it's always executed
@@ -240,8 +241,9 @@ public class DocumentController {
         @ApiResponse(code = 404, message = "Document not found"),
         @ApiResponse(code = 500, message = "An unexpected error occurred")
     })
-    @DeleteMapping("/{documentId}")
+    @DeleteMapping("/{userId}/{documentId}")
     public ApiResult<Void> deleteDocument(@PathVariable String userId, @PathVariable Long documentId) {
+    	logger.info("deleting document "+userId+"   documentId="+documentId);
         User user = userService.getById(userId);  // Fetch user by userId
 
         try {

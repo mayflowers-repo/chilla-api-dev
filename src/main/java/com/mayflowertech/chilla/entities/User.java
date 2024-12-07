@@ -93,10 +93,6 @@ public class User extends BaseEntity implements UserDetails {
     @Transient
     private List<String> assignedRoles;
     
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = true)
-    private Address address;
-
     // Getters and Setters
     public UUID getId() {
         return id;
@@ -291,15 +287,6 @@ public class User extends BaseEntity implements UserDetails {
         return false;
     }
 
-    
-    public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
-	
 
 	public String getStatus() {
 		return status;
@@ -413,4 +400,30 @@ public class User extends BaseEntity implements UserDetails {
 	    this.documents = documents;
 	}
 
+	
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_address",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "address_id"))
+    private Set<Address> addresses = new HashSet<>();
+
+    // Getters and setters
+    public Set<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(Set<Address> addresses) {
+        this.addresses = addresses;
+    }
+    
+	public void addAddress(Address address) {
+	    this.addresses.add(address);
+	    address.getUsers().add(this);
+	}
+	
+	public void removeAddress(Address address) {
+	    this.addresses.remove(address);
+	    address.getUsers().remove(this);
+	}
 }

@@ -7,14 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.College;
 import com.mayflowertech.chilla.entities.Country;
-import com.mayflowertech.chilla.entities.District;
 import com.mayflowertech.chilla.entities.PersonalizedService;
 import com.mayflowertech.chilla.entities.State;
 import com.mayflowertech.chilla.repositories.ICollegeRepository;
 import com.mayflowertech.chilla.repositories.ICountryRepository;
-import com.mayflowertech.chilla.repositories.IDistrictRepository;
+import com.mayflowertech.chilla.repositories.ILocationRepository;
 import com.mayflowertech.chilla.repositories.IStateRepository;
 import com.mayflowertech.chilla.repositories.IpServiceRepository;
 import com.mayflowertech.chilla.services.IMetadataService;
@@ -26,8 +26,7 @@ public class MetadataService implements IMetadataService{
     @Autowired
     private ICollegeRepository collegeRepository;
     
-    @Autowired
-    private IDistrictRepository districtRepository;
+
     
     @Autowired
     private ICountryRepository countryRepository;
@@ -38,11 +37,18 @@ public class MetadataService implements IMetadataService{
     @Autowired
     private IStateRepository stateRepository;
     
+	@Autowired
+	private ILocationRepository locationRepository;
+    
 	@Override
-	public List<District> getDistricts(State state) {
-		return districtRepository.findAll();
+	public List<String> getDistricts(State state) throws CustomException {
+		 if (state == null || state.getName() == null) {
+		        throw new CustomException("State cannot be null or have a null name.");
+		 }
+		 return locationRepository.findDistinctDistrictsByStateName(state.getName().toUpperCase());
 	}
-
+   
+	
 	@Override
 	public List<PersonalizedService> getServices(boolean valueAdded) {
 		return serviceRepository.findByValueAdded(valueAdded);

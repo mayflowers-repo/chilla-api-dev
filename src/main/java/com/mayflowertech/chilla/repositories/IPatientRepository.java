@@ -10,4 +10,5 @@ import com.mayflowertech.chilla.entities.Patient;
 public interface IPatientRepository extends JpaRepository<Patient, Long> {
 	Optional<Patient> findByPatientId(Long id);
 	List<Patient> findByEnrolledByCustomerId(Long customerId);
+	Optional<Patient> findByMobile(String mobile);
 }

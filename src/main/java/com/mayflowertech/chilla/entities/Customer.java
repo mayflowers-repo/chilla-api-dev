@@ -80,4 +80,6 @@ public class Customer extends BaseEntity implements Serializable {
 		this.registeredUser = registeredUser;
 	}
 	
+	
+	
 }

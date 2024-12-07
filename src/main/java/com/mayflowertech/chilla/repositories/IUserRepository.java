@@ -8,22 +8,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.mayflowertech.chilla.entities.User;
 
-
-public interface IUserRepository  extends JpaRepository<User, Serializable> {
+public interface IUserRepository extends JpaRepository<User, Serializable> {
 	User findByUsername(String username);
+
 	User findByEmail(String email);
+
 	User findByMobile(String mobile);
-	
+
 	User findById(UUID id);
+
 	User findByUsernameAndActive(String username, boolean active);
-    List<User> findByActiveOrderByUsernameAsc(boolean active);
 
+	List<User> findByActiveOrderByUsernameAsc(boolean active);
 
-    User findByUsernameAndPassword(String username, String password);
+	User findByUsernameAndPassword(String username, String password);
 
-    User findByUsernameAndPasswordAndActive(String username, String password,
-            boolean active);
+	User findByUsernameAndPasswordAndActive(String username, String password, boolean active);
 
-    User findByEmailAndPassword(String email, String password);
+	User findByEmailAndPassword(String email, String password);
 
 }

@@ -28,6 +28,7 @@ public class GoogleTokenInfo {
     private String typ;
     
     
+    private String socialId;
     
     public String getIss() {
 		return iss;
@@ -180,6 +181,14 @@ public class GoogleTokenInfo {
 
 	public void setSub(String sub) {
 		this.sub = sub;
+	}
+
+	public String getSocialId() {
+		return socialId;
+	}
+
+	public void setSocialId(String socialId) {
+		this.socialId = socialId;
 	}
 
 }

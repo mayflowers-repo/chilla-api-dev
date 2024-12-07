@@ -40,6 +40,7 @@ public class SecurityConfigurerAdapter  extends WebSecurityConfigurerAdapter{
           .antMatchers("/**/api/v1/usermanagement/verifyGoogleIdTokenDart").permitAll()
           .antMatchers("/**/api/v1/usermanagement/users/*/forgotpassword").permitAll()
           .antMatchers("/**/api/v1/usermanagement/users/resetpassword/**").permitAll()
+          //.antMatchers("/**/api/v1/metadata/**").permitAll()
           .antMatchers("/**/api/v1/usermanagement/users/changepassword").permitAll()
           .antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/**",
                   "/swagger-ui.html", "/ec/**", "/webjars/**")

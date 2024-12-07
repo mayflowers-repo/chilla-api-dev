@@ -72,30 +72,48 @@ public class DocumentServiceImpl implements IDocumentService {
             } else {
                 throw new CustomException("Invalid file name");
             }
-            
-            originalFilename = userId + "_" +originalFilename;
-            
-            logger.info("originalFilename "+originalFilename);
-          
-            // Upload file to Google Cloud Storage
-            String bucketName = "karuthal-docubucket1"; // Replace with your bucket name
 
-            logger.info("starting service method");
-            googleCloudStorageService.uploadObject(file, originalFilename);
-            logger.info("saved");
+            logger.info("Original filename: " + originalFilename);
 
-            // Create and save the document metadata
-            AddressProofDocument document = new AddressProofDocument();
-            document.setUser(user);
-            document.setDocumentType(documentType);
-            document.setFilePath(originalFilename);
-            document.setDocumentExtension(documentExtension);
+            // Check if a document of the same type already exists for this user
+            List<AddressProofDocument> existingDocuments = documentRepository.findByUserId(user.getId());
+            AddressProofDocument existingDocument = existingDocuments.stream()
+                    .filter(doc -> doc.getDocumentType() == documentType)
+                    .findFirst()
+                    .orElse(null);
 
-            return documentRepository.save(document);
+            if (existingDocument != null) {
+                logger.info("Document of type " + documentType + " already exists, updating it.");
+
+                // Update the file in Google Cloud Storage
+                googleCloudStorageService.uploadObject(file, existingDocument.getFilePath());
+                logger.info("Updated file in Google Cloud Storage");
+
+                // Update metadata if needed
+                existingDocument.setDocumentExtension(documentExtension);
+                return documentRepository.save(existingDocument);
+            } else {
+                logger.info("Adding a new document of type " + documentType);
+
+                // Upload file to Google Cloud Storage
+                String bucketName = "karuthal-docubucket1"; // Replace with your bucket name
+                googleCloudStorageService.uploadObject(file, originalFilename);
+                logger.info("Saved new file to Google Cloud Storage");
+
+                // Create and save the new document metadata
+                AddressProofDocument document = new AddressProofDocument();
+                document.setUser(user);
+                document.setDocumentType(documentType);
+                document.setFilePath(originalFilename);
+                document.setDocumentExtension(documentExtension);
+
+                return documentRepository.save(document);
+            }
         } catch (Exception e) {
             throw new CustomException("Error while uploading the document to Google Cloud Storage", e);
         }
     }
+
 
     
     @Override
@@ -161,10 +179,10 @@ public class DocumentServiceImpl implements IDocumentService {
     private String getFileExtension(String filename) {
         return filename != null && filename.contains(".") ? filename.substring(filename.lastIndexOf(".") + 1) : "";
     }
-
+    
     @Override
     public void deleteDocument(User user, Long documentId) throws CustomException {
-        AddressProofDocument document = getDocumentById(documentId); // Ensure the document exists
+        AddressProofDocument document = getDocumentById(documentId); 
         documentRepository.delete(document);
     }
 }

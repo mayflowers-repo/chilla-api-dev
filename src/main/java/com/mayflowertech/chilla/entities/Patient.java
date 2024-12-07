@@ -1,20 +1,27 @@
 package com.mayflowertech.chilla.entities;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mayflowertech.chilla.enums.Gender;
 import com.mayflowertech.chilla.enums.PatientRelation;
 
@@ -145,6 +152,60 @@ public class Patient  extends BaseEntity implements Serializable {
 	
 	@Column(name = "mobile",  nullable = true, length = 15)
 	private String mobile;
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
 	
+  
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "patient_address",
+        joinColumns = @JoinColumn(name = "patient_id"),
+        inverseJoinColumns = @JoinColumn(name = "address_id"))
+	private Set<Address> addresses = new HashSet<>();
+
+	public Set<Address> getAddresses() {
+	    return addresses;
+	}
+
+	public void setAddresses(Set<Address> addresses) {
+	    this.addresses = addresses;
+	}
 	
+	public void addAddress(Address address) {
+	    this.addresses.add(address);
+	    address.getPatients().add(this);
+	}
+
+	public void removeAddress(Address address) {
+	    this.addresses.remove(address);
+	    address.getPatients().remove(this);
+	}
+
+	@Override
+	public String toString() {
+	    return "Patient{" +
+	            "patientId=" + patientId +
+	            ", firstName='" + firstName + '\'' +
+	            ", lastName='" + lastName + '\'' +
+	            ", mobile='" + mobile + '\'' +
+	            ", email='" + email + '\'' +
+	            ", age=" + age +
+	            ", gender='" + gender + '\'' +
+	            ", enrolledBy='" + enrolledBy + '\'' +
+	            '}';
+	}
+
 }

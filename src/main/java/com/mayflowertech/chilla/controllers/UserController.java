@@ -47,6 +47,7 @@ import com.mayflowertech.chilla.entities.Role;
 import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.entities.UserProfile;
 import com.mayflowertech.chilla.entities.pojo.ResetPasswordPojo;
+import com.mayflowertech.chilla.entities.pojo.UserPojo;
 import com.mayflowertech.chilla.enums.SystemConfigGroup;
 import com.mayflowertech.chilla.enums.SystemRoles;
 import com.mayflowertech.chilla.enums.UserStatus;
@@ -126,6 +127,43 @@ public class UserController {
       }
   }
 
+
+  @ApiResponses(value = {
+      @ApiResponse(code = 200, message = "Successfully retrieved user"),
+      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+      @ApiResponse(code = 404, message = "The user with the specified email was not found"),
+      @ApiResponse(code = 500, message = "Internal server error")
+  })
+  @RequestMapping(value = "/usermanagement/userbyemail", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ApiResult<UserPojo> getUserByEmail(
+          @RequestParam(name = "email") String email, Model model) {
+      try {
+          // Fetch user by email using the service
+          User user = userService.getByEmail(email);
+
+          if (user == null) {
+              logger.warn("User with email '{}' not found", email);
+              return new ApiResult<>(HttpStatus.NOT_FOUND.value(), "User not found", null);
+          }
+
+          logger.info("usermanagement GET user by email '{}'", email);
+
+          // Convert User entity to UserPojo
+          UserPojo userPojo = UserPojo.copyToUserPojo(user);
+
+          // Return success response with the UserPojo in ApiResult
+          return new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved user", userPojo);
+
+      } catch (Exception ex) {
+          logger.error("Error: An unexpected error occurred while fetching user by email '{}'", email, ex);
+
+          // Return error response for general server error in ApiResult
+          return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+      }
+  }
+
+
   
 
 
@@ -140,11 +178,6 @@ public class UserController {
 
       try {
           if (user != null) {
-              // Check for social login
-              if (user.getSocialId() != null) {
-                  user = userService.checkSocialUser(user);
-                  return new ApiResult<>(HttpStatus.OK.value(), "Social login successful", user);
-              }
 
               // Authenticate with username and password
               final Authentication authentication = authenticationManager.authenticate(
@@ -386,11 +419,7 @@ public class UserController {
 	}
 	User existingUser = userService.getUser(user.getUsername());
 	logger.info("updating the user details :"+user);
-	if(user.getAddress() != null) {
-		logger.info("address :"+user.getAddress());
-		existingUser.setAddress(user.getAddress());
-	}
-		
+
 	if(user.getCity() != null) {
 		logger.info("city :"+user.getCity());		
 		existingUser.setCity(user.getCity());
@@ -651,27 +680,48 @@ public class UserController {
 
 
   @ApiIgnore
-  @RequestMapping(value = "/usermanagement/verifyGoogleIdToken", method = {RequestMethod.POST},
-	      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> verifyGoogleIdToken(@RequestBody GoogleTokenInfo idToken) {
-	  logger.info("verifyGoogleIdToken="+idToken);
+  @RequestMapping(value = "/usermanagement/verifyGoogleIdToken", method = RequestMethod.POST, 
+                  consumes = MediaType.APPLICATION_JSON_VALUE, 
+                  produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> verifyGoogleIdToken(@RequestBody GoogleTokenInfo idToken) {
+      logger.info("verifyGoogleIdToken=" + idToken);
 
-	  if(idToken.getJti() != null && !idToken.getJti().isEmpty() && idToken.getEmail() != null) {
-		  	logger.info("google jwt token valid="+idToken.getJti());
-		    User user = new User();
-		    user.setSocialId(idToken.getJti());
-		    user.setEmail(idToken.getEmail());
-		    user.setFirstName(idToken.getName());
-		    user.setPhotoUrl(idToken.getPicture());
-		    user.setUsername(idToken.getEmail());
-		    user = userService.checkSocialUser(user);
-		    return new ResponseEntity<User>(user, HttpStatus.OK);
-	  }else {
-		  logger.error("google jwt token invalid="+idToken.getJti()+"  "+idToken.getEmail());
-		  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-	  }
-	  
+      try {
+          // Validate the token information
+          if (idToken.getJti() != null && !idToken.getJti().isEmpty() && idToken.getEmail() != null) {
+              logger.info("google jwt token valid=" + idToken.getJti());
+
+              User user = new User();
+              user.setSocialId(idToken.getJti());
+              user.setEmail(idToken.getEmail());
+              user.setFirstName(idToken.getName());
+              user.setPhotoUrl(idToken.getPicture());
+              user.setUsername(idToken.getEmail());
+              user.setSocialId(idToken.getSocialId());
+
+              // Check and process the social user
+              user = userService.checkSocialUser(user);
+
+              // Apply JSON filter to include only specified fields in the response
+              jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "firstName", 
+                                               "customerId", "authtoken", "status",  "registered");
+
+              // Return the processed user object
+              return new ResponseEntity<>(user, HttpStatus.OK);
+          } else {
+              logger.error("google jwt token invalid=" + idToken.getJti() + "  " + idToken.getEmail());
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+          }
+      } catch (Throwable e) {
+          logger.error("Error verifying Google ID token: " + e.getMessage());
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                               .body("Failed: " + e.getMessage());
+      } finally {
+          // Clear any filters applied
+          jacksonFilterConfig.clearFilters();
+      }
   }
+
   
   private final String GOOGLE_TOKENINFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
   @ApiIgnore

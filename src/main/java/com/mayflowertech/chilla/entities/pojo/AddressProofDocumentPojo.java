@@ -10,6 +10,7 @@ public class AddressProofDocumentPojo {
     private DocumentType documentType;
     private DocumentExtension documentExtension;
     private String userId;
+    private String documentName;
 
     public Long getId() {
         return id;
@@ -42,4 +43,14 @@ public class AddressProofDocumentPojo {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+	public String getDocumentName() {
+		return documentName;
+	}
+
+	public void setDocumentName(String documentName) {
+		this.documentName = documentName;
+	}
+    
+    
 }

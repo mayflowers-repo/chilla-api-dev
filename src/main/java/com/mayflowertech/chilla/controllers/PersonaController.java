@@ -92,6 +92,7 @@ public class PersonaController {
 	      logger.info("registering customer "+customer);
 	      
 	      Customer newCustomer = userService.registerCustomer(customer);
+	      customer = CustomerPojo.copyCustomerToPojo(newCustomer);
 	      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
 	      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	    } catch (Throwable e) {
@@ -305,7 +306,8 @@ public class PersonaController {
 	          ApiResult<List<Patient>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved patients", patients);
 	          
 		      jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-		      jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "registeredUser");
+		      jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "age", "gender", "firstName", "lastName",
+		    		  "mobile", "email", "relationWithPatient", "healthDescription", "addresses");
 		      jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
 	          return apiResult;
 
