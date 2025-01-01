@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.WorkLog;
+import com.mayflowertech.chilla.entities.pojo.WorkLogCriteriaPojo;
 
 public interface IWorkLogService {
 	public WorkLog startWorkLog(WorkLog workLog) throws CustomException;
@@ -16,4 +17,5 @@ public interface IWorkLogService {
 	public WorkLog getWorkLog(Long logId) throws CustomException;
 	public List<WorkLog> getWorkLogsByDate(LocalDate date) throws CustomException;
 	public List<WorkLog> getWorkLogsByStudentId(Long studentId) throws CustomException;
+	public List<WorkLog> getWorkLogsByCriteria(WorkLogCriteriaPojo criteria) throws CustomException;
 }

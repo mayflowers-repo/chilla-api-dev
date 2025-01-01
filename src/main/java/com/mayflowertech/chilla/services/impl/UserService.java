@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import com.mayflowertech.chilla.config.AuthorizationConstants;
 import com.mayflowertech.chilla.config.Constants;
 import com.mayflowertech.chilla.config.JwtAuthorizationProvider;
+import com.mayflowertech.chilla.config.RSAEncryptionConfigUtil;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.Address;
 import com.mayflowertech.chilla.entities.Country;
@@ -353,7 +354,7 @@ public class UserService implements UserDetailsService, IUserService {
 			}
 		} else {
 			user.setPassword(PasswordUtils.generateSecurePassword(user.getSocialId(), Constants.PASSWORD_SALT));
-			Role role = roleService.getRoleByName(SystemRoles.GUEST.getRoleCode());
+			Role role = roleService.getRoleByName(SystemRoles.CUSTOMER.getRoleCode());
 			user = userRepository.save(user);
 			addRoletoUser(user, role);
 		}
@@ -563,6 +564,39 @@ public class UserService implements UserDetailsService, IUserService {
 	    if (user == null) {
 	        throw new CustomException("User not found with email: " + pojo.getEmail());
 	    }
+		try {
+			RSAEncryptionConfigUtil rsaEncryptionUtil = new RSAEncryptionConfigUtil();
+			
+			String newPass = rsaEncryptionUtil.decrypt(pojo.getPassword());
+			 
+			    user.setPassword(PasswordUtils.generateSecurePassword(newPass, Constants.PASSWORD_SALT));
+			    user.setOtpWaiting(false);
+			    user.setStatus(UserStatus.ACTIVE.getCode());
+			    user = userRepository.save(user);
+			    logger.info("password changed successfully for user "+user);
+		} catch (Exception e) {
+			 logger.error("Error updating password "+user);
+			e.printStackTrace();
+		} catch (CustomException e) {
+			 logger.error("Error updating password "+user);
+			e.printStackTrace();
+		}
+	   
+	    
+	    return user;
+	}
+
+	
+	@Override
+	public User changePasswordInitial(ResetPasswordPojo pojo) throws CustomException {
+	    if (pojo.getEmail() == null || pojo.getPassword() == null) {
+	        throw new CustomException("Email or password cannot be null.");
+	    }
+
+	    User user = userRepository.findByEmail(pojo.getEmail());
+	    if (user == null) {
+	        throw new CustomException("User not found with email: " + pojo.getEmail());
+	    }
 	    
 	    if(! user.isOtpWaiting()) {
 	    	throw new CustomException("User not expecting OTP.");
@@ -591,7 +625,7 @@ public class UserService implements UserDetailsService, IUserService {
 
 	    return user;
 	}
-
+	
 	@Override
 	public User markUserAsRegistered(String email) throws CustomException {
 		User existingUser = userRepository.findByEmail(email);

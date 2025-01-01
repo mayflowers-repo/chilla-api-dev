@@ -181,8 +181,8 @@ public class PersonaController {
 
 	          // Return success response with customers list
 	          ApiResult<List<Customer>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved customers", customers);
-	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email");
-	          jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
+	          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "mobile");
+	          jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser", "country", "city", "job");
 	          return apiResult;
 
 	      } catch (Exception ex) {
@@ -243,8 +243,8 @@ public class PersonaController {
 
 	          // Return success response with students list
 	          ApiResult<List<Student>> apiResult = new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved students", students);
-	          jacksonFilterConfig.applyFilters("UserFilter", "username", "email");
-	          jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
+	          jacksonFilterConfig.applyFilters("UserFilter", "username", "email", "firstName", "lastName");
+	          jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser", "age", "course", "completionYear", "gender", "offeredServices");
 	          return apiResult;
 
 	      } catch (Exception ex) {

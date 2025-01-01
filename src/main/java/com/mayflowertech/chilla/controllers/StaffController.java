@@ -26,12 +26,16 @@ import com.mayflowertech.chilla.entities.Patient;
 import com.mayflowertech.chilla.entities.Student;
 import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.entities.pojo.BookingRequestAssignPojo;
+import com.mayflowertech.chilla.entities.pojo.EmailVerifyPojo;
 import com.mayflowertech.chilla.entities.pojo.ManagerPojo;
 import com.mayflowertech.chilla.entities.pojo.PatientPojo;
 import com.mayflowertech.chilla.entities.pojo.StudentPojo;
+import com.mayflowertech.chilla.enums.MailOtpPurpose;
+import com.mayflowertech.chilla.services.IMailService;
 import com.mayflowertech.chilla.services.IManagerService;
 import com.mayflowertech.chilla.services.IPersonaService;
 import com.mayflowertech.chilla.services.IStudentService;
+import com.mayflowertech.chilla.services.IUserService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -56,6 +60,14 @@ public class StaffController {
     @Autowired
     private IManagerService managerService;
     
+
+    @Autowired
+    private IUserService userService;
+    
+	
+	@Autowired
+	private IMailService mailService;
+    
     @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
     @ApiOperation(value = "View a list of all students")
     @ApiResponses(value = {
@@ -71,6 +83,8 @@ public class StaffController {
             logger.info("GET students list");
             List<Student> students = personaService.listStudents();
 
+            jacksonFilterConfig.applyFilters("UserFilter", "username", "email");
+            jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
             // Return success response with the list of students
             return new ApiResult<>(HttpStatus.OK.value(), "Successfully retrieved students list", students);
 
@@ -78,7 +92,9 @@ public class StaffController {
             logger.error("Error: An unexpected error occurred while retrieving students list", ex);
             // Return error response for internal server error
             return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
-        }
+        }finally {
+	    	  jacksonFilterConfig.clearFilters(); 
+	    }
     }
 
 	  
@@ -317,4 +333,38 @@ public class StaffController {
 	            return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
 	        }
 	    }
+	    
+	    
+	    @ApiOperation(value = "Initiate Change Password Process")
+	    @ApiResponses(value = {
+	        @ApiResponse(code = 200, message = "OTP sent successfully"),
+	        @ApiResponse(code = 404, message = "Email not found"),
+	        @ApiResponse(code = 500, message = "An unexpected error occurred")
+	    })
+	    @RequestMapping(value = "/initiatechangepassword", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	    public ApiResult<String> initiateChangePassword(@RequestBody EmailVerifyPojo emailVerifyPojo) {
+	        logger.info("Initiating change password process for email: {}", emailVerifyPojo.getEmail());
+	        
+	        try {
+	            // Check if the user exists for the provided email
+	            User user = userService.getByEmail(emailVerifyPojo.getEmail());
+	            if (user == null) {
+	                return new ApiResult<>(HttpStatus.NOT_FOUND.value(), "Email not found", null);
+	            }
+	            
+	            // Generate and send OTP
+	            String otp = mailService.generateAndSendOtp(emailVerifyPojo.getEmail(), MailOtpPurpose.PASSWORD_CHANGE.getCode());
+
+	            logger.info("OTP sent successfully to email: {}", emailVerifyPojo.getEmail());
+	            return new ApiResult<>(HttpStatus.OK.value(), "OTP sent successfully", null);
+	        } catch (CustomException e) {
+	            return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
+	        } catch (Exception e) {
+	            logger.error("Error initiating change password for email: {}", emailVerifyPojo.getEmail(), e);
+	            return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+	        }
+	    }
+
+	    
+	    
 }

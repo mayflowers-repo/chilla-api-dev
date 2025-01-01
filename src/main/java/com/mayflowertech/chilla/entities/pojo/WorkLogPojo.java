@@ -22,7 +22,7 @@ public class WorkLogPojo {
     
     private LocalDateTime workEndTime;
     
-    private Duration duration;
+    private String duration;
     
 	public Long getLogId() {
 		return logId;
@@ -50,10 +50,10 @@ public class WorkLogPojo {
 	public void setWorkEndTime(LocalDateTime workEndTime) {
 		this.workEndTime = workEndTime;
 	}
-	public Duration getDuration() {
+	public String getDuration() {
 		return duration;
 	}
-	public void setDuration(Duration duration) {
+	public void setDuration(String duration) {
 		this.duration = duration;
 	}
 	public Student getStudent() {

@@ -101,4 +101,17 @@ public class EmailOtpRequest implements Serializable {
 	public String toString() {
 		return "otp="+otp+"  email="+email;
 	}
+	
+	@Column(name = "purpose", nullable = true, length = 30)
+	private String purpose;
+
+	public String getPurpose() {
+		return purpose;
+	}
+
+
+	public void setPurpose(String purpose) {
+		this.purpose = purpose;
+	}
+	
 }

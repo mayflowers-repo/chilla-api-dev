@@ -6,10 +6,12 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -17,12 +19,12 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.mayflowertech.chilla.config.custom.CustomException;
 
 public class CommonUtils {
   private static final Logger logger = LoggerFactory
@@ -233,6 +235,18 @@ public class CommonUtils {
       return financialyear;
   }
   
+  public static boolean isValidEmail(String email) {
+	    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+	    return email.matches(emailRegex);
+	}
   
 
+  public static  LocalDate parseDate(String dateStr) throws CustomException {
+	    try {
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	        return LocalDate.parse(dateStr, formatter);
+	    } catch (DateTimeParseException e) {
+	        throw new CustomException("Invalid date format. Expected format: dd-MM-yyyy");
+	    }
+	}
 }

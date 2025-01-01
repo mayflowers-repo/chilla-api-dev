@@ -14,12 +14,16 @@ import org.springframework.stereotype.Service;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.BookingRequest;
 import com.mayflowertech.chilla.entities.Student;
+import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.entities.WorkLog;
+import com.mayflowertech.chilla.entities.pojo.WorkLogCriteriaPojo;
 import com.mayflowertech.chilla.repositories.IPatientRepository;
 import com.mayflowertech.chilla.repositories.IStudentRepository;
+import com.mayflowertech.chilla.repositories.IUserRepository;
 import com.mayflowertech.chilla.repositories.IWorkLogRepository;
 import com.mayflowertech.chilla.services.IBookingRequestService;
 import com.mayflowertech.chilla.services.IWorkLogService;
+import com.mayflowertech.chilla.utils.CommonUtils;
 
 @Service
 public class WorkLogServiceImpl implements IWorkLogService {
@@ -34,6 +38,8 @@ public class WorkLogServiceImpl implements IWorkLogService {
     @Autowired
     private IPatientRepository patientRepository;
     
+    @Autowired
+    IUserRepository userRepository;
     
     @Autowired
     private IBookingRequestService bookingRequestService;
@@ -193,4 +199,43 @@ public class WorkLogServiceImpl implements IWorkLogService {
     }
 	
 	
+	@Override
+	public List<WorkLog> getWorkLogsByCriteria(WorkLogCriteriaPojo criteria) throws CustomException {
+		logger.info("getWorkLogsByCriteria service ");
+	    // Validate the input criteria
+	    if (criteria == null) {
+	        throw new CustomException("Criteria cannot be null.");
+	    }
+
+	    LocalDate fromDate = CommonUtils.parseDate(criteria.getFromDate());
+	    LocalDate toDate = CommonUtils.parseDate(criteria.getToDate());
+
+	    LocalDateTime fromDateTime = fromDate.atStartOfDay();
+	    LocalDateTime toDateTime = toDate.atTime(23, 59, 59);
+
+	    // Validate and fetch the student if email is provided
+	    if (criteria.getStudentEmail() != null && !criteria.getStudentEmail().isEmpty()) {
+	        User user = userRepository.findByEmail(criteria.getStudentEmail());
+	        if (user == null) {
+	            throw new CustomException("No student found with email " + criteria.getStudentEmail());
+	        }
+
+	        Optional<Student> studentOptional = studentRepository.findByRegisteredUser(user);
+	        Student student = studentOptional.orElseThrow(() -> 
+	            new CustomException("Student not found for the provided user.")
+	        );
+
+	        // Fetch work logs for the student with the date range
+	        return workLogRepository.findByStudent_StudentIdAndWorkStartTimeBetween(
+	            student.getStudentId(), fromDateTime, toDateTime  );
+	    }
+
+	    // If no student email is provided, fetch work logs by date range only
+	    return workLogRepository.findByWorkStartTimeBetween(fromDateTime, toDateTime);
+	}
+
+
+
+
+
 }

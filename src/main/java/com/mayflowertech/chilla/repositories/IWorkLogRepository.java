@@ -10,5 +10,7 @@ import com.mayflowertech.chilla.entities.WorkLog;
 public interface IWorkLogRepository extends JpaRepository<WorkLog, Long> {
 	 List<WorkLog> findByWorkStartTimeBetween(LocalDateTime start, LocalDateTime end);
 	  List<WorkLog> findByStudent_StudentId(Long studentId);
+	  List<WorkLog> findByStudent_StudentIdAndWorkStartTimeBetween(
+	            Long studentId, LocalDateTime startDate, LocalDateTime endDate);
 	  WorkLog findFirstByStudent_StudentIdAndWorkEndTimeIsNullOrderByWorkStartTimeDesc(Long studentId);
 }

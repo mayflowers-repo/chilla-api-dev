@@ -96,7 +96,8 @@ public class EmailController {
 	public ApiResult<String> verifyOtp(@RequestBody EmailVerifyPojo otpVerificationRequest) {
 	    try {
 	    	logger.info("verify-otp controller "+otpVerificationRequest.getEmail());
-	        boolean isValid = mailService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
+	        boolean isValid = mailService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp(), 
+	        		otpVerificationRequest.getPurpose());
 	        if (isValid) {
 	            return new ApiResult<>(HttpStatus.OK.value(), "OTP verified successfully", "Verification successful");
 	        } else {

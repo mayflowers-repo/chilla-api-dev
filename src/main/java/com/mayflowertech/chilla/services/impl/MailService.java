@@ -140,7 +140,7 @@ public class MailService implements IMailService{
     }
     
     @Override
-    public boolean verifyOtp(String email, String otp) throws CustomException {
+    public boolean verifyOtp(String email, String otp, String purpose) throws CustomException {
     	 Optional<EmailOtpRequest> otpRequestOpt = otpRepository.findTopByEmailOrderByCreatedAtDesc(email);
     	 
     	   email = email.toLowerCase();
@@ -162,6 +162,7 @@ public class MailService implements IMailService{
     	    // If OTP is valid, update the request and return true
     	    otpRequest.setVerifiedAt(LocalDateTime.now());
     	    otpRequest.setStatus(OtpStatus.VERIFIED.getCode());
+    	    otpRequest.setPurpose(purpose);
     	    otpRepository.save(otpRequest);
     	    
     	    return true;

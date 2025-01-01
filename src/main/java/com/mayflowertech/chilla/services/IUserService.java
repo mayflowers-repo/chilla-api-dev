@@ -44,5 +44,6 @@ public interface IUserService {
     public Long getStudentId(User user) throws CustomException;
     public User updateUserStatus(UUID id, String newStatus) throws CustomException;
     User changePassword(ResetPasswordPojo pojo) throws CustomException;
+    User changePasswordInitial(ResetPasswordPojo pojo) throws CustomException;
     User markUserAsRegistered(String email) throws CustomException;
 }

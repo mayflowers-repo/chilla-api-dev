@@ -1,5 +1,6 @@
 package com.mayflowertech.chilla.controllers;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +22,10 @@ import com.mayflowertech.chilla.config.JacksonFilterConfig;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.ApiResult;
 import com.mayflowertech.chilla.entities.WorkLog;
+import com.mayflowertech.chilla.entities.pojo.WorkLogCriteriaPojo;
 import com.mayflowertech.chilla.entities.pojo.WorkLogPojo;
 import com.mayflowertech.chilla.services.IWorkLogService;
+import com.mayflowertech.chilla.utils.CommonUtils;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -168,11 +171,33 @@ public class WorkLogController {
         workLogPojo.setWorkDescription(workLog.getWorkDescription());
         workLogPojo.setWorkStartTime(workLog.getWorkStartTime());
         workLogPojo.setWorkEndTime(workLog.getWorkEndTime());
-        workLogPojo.setDuration(workLog.getDuration());
+        String duration = getFormattedDuration(workLog);
+        workLogPojo.setDuration(duration);
 
         return workLogPojo;
     }
 
+    private Duration calculateDuration(WorkLog workLog) {
+	    if (workLog.getWorkStartTime() != null && workLog.getWorkEndTime() != null) {
+	        return Duration.between(workLog.getWorkStartTime(), workLog.getWorkEndTime());
+	    }
+	    return Duration.ZERO; // Return zero if duration cannot be calculated
+   }
+    
+    public String getFormattedDuration(WorkLog workLog) {
+        Duration duration = calculateDuration(workLog);
+        if (duration == null) {
+            return "N/A";
+        }
+        long hours = duration.toHours();
+        long minutes = duration.minusHours(hours).toMinutes();
+        long seconds = duration.minusHours(hours).minusMinutes(minutes).getSeconds();  // Calculate remaining seconds
+
+        return String.format("%d hours %d minutes %d seconds", hours, minutes, seconds);  // Include seconds
+    }
+
+
+    
     @ApiOperation(value = "Get all work logs for a student by student ID")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Successfully retrieved work logs"),
@@ -204,6 +229,77 @@ public class WorkLogController {
             return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
         }finally {
         	jacksonFilterConfig.clearFilters();
+        }
+    }
+    
+    
+    @ApiOperation(value = "Get work logs based on criteria")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Successfully retrieved work logs based on criteria"),
+        @ApiResponse(code = 404, message = "No work logs found for the given criteria"),
+        @ApiResponse(code = 500, message = "An unexpected error occurred")
+    })
+    @RequestMapping(value = "/worklogsbycriteria", method = RequestMethod.POST)
+    public ApiResult<List<WorkLogPojo>> getWorkLogsByCriteria(@RequestBody WorkLogCriteriaPojo workLogCriteria) {
+        try {
+            logger.info("Retrieving work logs based on criteria: " );
+            
+            // Validate the WorkLogCriteria object
+            validateCriteria(workLogCriteria);
+            
+            // Call service method to get work logs based on criteria
+            List<WorkLog> workLogs = workLogService.getWorkLogsByCriteria(workLogCriteria);
+            
+            if (workLogs.isEmpty()) {
+                return new ApiResult<>(HttpStatus.NOT_FOUND.value(), "No work logs found for the given criteria", null);
+            }
+            
+            // Convert WorkLog entities to WorkLogPojo objects
+            List<WorkLogPojo> workLogPojos = workLogs.stream()
+                .map(this::convertToPojo)
+                .toList();
+
+            // Apply filters for Jackson
+            jacksonFilterConfig.applyFilters("UserFilter", "id", "firstName", "lastName");
+            jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
+            jacksonFilterConfig.applyFilters("BookingRequestFilter", "id");
+
+            return new ApiResult<>(HttpStatus.OK.value(), "Work logs retrieved successfully", workLogPojos);
+        } catch (CustomException e) {
+            return new ApiResult<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            logger.error("Error while retrieving work logs based on criteria: " + workLogCriteria, e);
+            return new ApiResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred", null);
+        } finally {
+            jacksonFilterConfig.clearFilters();
+        }
+    }
+
+    private void validateCriteria(WorkLogCriteriaPojo criteria) throws CustomException {
+        if (criteria == null) {
+            throw new CustomException("Criteria cannot be null.");
+        }
+
+        // Validate dates
+        if (criteria.getFromDate() == null || criteria.getFromDate().isEmpty()) {
+            throw new CustomException("Start date (fromDate) is mandatory.");
+        }
+        if (criteria.getToDate() == null || criteria.getToDate().isEmpty()) {
+            throw new CustomException("End date (toDate) is mandatory.");
+        }
+
+        LocalDate fromDate = CommonUtils.parseDate(criteria.getFromDate());
+        LocalDate toDate = CommonUtils.parseDate(criteria.getToDate());
+
+        if (fromDate.isAfter(toDate)) {
+            throw new CustomException("Start date (fromDate) cannot be after end date (toDate).");
+        }
+
+        // Validate email
+        if (criteria.getStudentEmail() != null && !criteria.getStudentEmail().isEmpty()) {
+            if (! CommonUtils.isValidEmail(criteria.getStudentEmail())) {
+                throw new CustomException("Invalid email format for studentEmail.");
+            }
         }
     }
     

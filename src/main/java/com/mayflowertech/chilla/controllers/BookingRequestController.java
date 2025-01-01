@@ -201,6 +201,7 @@ public class BookingRequestController {
              jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "firstName", "lastName");
              jacksonFilterConfig.applyFilters("PatientFilter", "patientId", "firstName", "lastName", "age", "gender", "healthDescription");
              jacksonFilterConfig.applyFilters("CustomerFilter", "customerId", "registeredUser");
+             jacksonFilterConfig.applyFilters("StudentFilter", "studentId", "registeredUser");
              return new ApiResult<>(HttpStatus.OK.value(), "Booking request retrieved successfully.", bookingRequest);
          } catch (CustomException e) {
              return new ApiResult<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null);

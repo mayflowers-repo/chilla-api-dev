@@ -37,6 +37,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.mayflowertech.chilla.GoogleTokenInfo;
 import com.mayflowertech.chilla.config.JacksonFilterConfig;
 import com.mayflowertech.chilla.config.JwtAuthorizationProvider;
+import com.mayflowertech.chilla.config.RSAEncryptionConfigUtil;
 import com.mayflowertech.chilla.config.custom.ApplicationConfigParams;
 import com.mayflowertech.chilla.config.custom.CustomException;
 import com.mayflowertech.chilla.entities.ApiResult;
@@ -659,7 +660,7 @@ public class UserController {
       
       try {
           // Call the service to process the password reset based on email and password
-          userWithToken = userService.changePassword(request);
+          userWithToken = userService.changePasswordInitial(request);
           logger.info("Password reset successful for user: {}   with token={}", request.getEmail(), userWithToken.getAuthtoken());
           
           // Return the result wrapped in ApiResult
@@ -765,7 +766,40 @@ public class UserController {
       return null;
   }
   
-  
-  
+ 
+  @Autowired
+  private RSAEncryptionConfigUtil rsaEncryptionConfigUtil;
+
+  @ApiOperation(value = "Reset Password", response = ApiResult.class)
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "Password reset successful"),
+          @ApiResponse(code = 404, message = "User not found")
+  })
+  @RequestMapping(value = "/usermanagement/changepassword", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ApiResult<User> changePassword(@RequestBody ResetPasswordPojo request) {
+	  User user;
+      try {
+          // Log the request
+          logger.info("Attempting password change for email: {}", request.getEmail());
+
+          // Decrypt the password
+          String decryptedPassword = rsaEncryptionConfigUtil.decrypt(request.getPassword());
+
+          user = userService.changePassword(request);
+
+          jacksonFilterConfig.applyFilters("UserFilter", "id", "username", "email", "active",
+        		  "status", "registered");
+          return new ApiResult<User>(HttpStatus.OK.value(), "Password reset successful", user);
+
+      } catch (Throwable e) {
+          logger.error("Error resetting password for email: {}", request.getEmail(), e);
+          return new ApiResult<>(HttpStatus.BAD_REQUEST.value(), "Password reset failed: " + e.getMessage(), null);
+      }finally {
+    	  jacksonFilterConfig.clearFilters();
+      }
+      
+     
+  }
+
   
 }

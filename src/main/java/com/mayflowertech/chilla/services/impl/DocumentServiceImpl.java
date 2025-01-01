@@ -75,6 +75,9 @@ public class DocumentServiceImpl implements IDocumentService {
 
             logger.info("Original filename: " + originalFilename);
 
+            // Generate the filePath using userId and originalFilename
+            String filePath = userId + "_" + originalFilename;
+
             // Check if a document of the same type already exists for this user
             List<AddressProofDocument> existingDocuments = documentRepository.findByUserId(user.getId());
             AddressProofDocument existingDocument = existingDocuments.stream()
@@ -86,25 +89,26 @@ public class DocumentServiceImpl implements IDocumentService {
                 logger.info("Document of type " + documentType + " already exists, updating it.");
 
                 // Update the file in Google Cloud Storage
-                googleCloudStorageService.uploadObject(file, existingDocument.getFilePath());
+                googleCloudStorageService.uploadObject(file, filePath);
                 logger.info("Updated file in Google Cloud Storage");
 
                 // Update metadata if needed
                 existingDocument.setDocumentExtension(documentExtension);
+                existingDocument.setFilePath(filePath); // Set updated filePath
                 return documentRepository.save(existingDocument);
             } else {
                 logger.info("Adding a new document of type " + documentType);
 
                 // Upload file to Google Cloud Storage
                 String bucketName = "karuthal-docubucket1"; // Replace with your bucket name
-                googleCloudStorageService.uploadObject(file, originalFilename);
+                googleCloudStorageService.uploadObject(file, filePath);
                 logger.info("Saved new file to Google Cloud Storage");
 
                 // Create and save the new document metadata
                 AddressProofDocument document = new AddressProofDocument();
                 document.setUser(user);
                 document.setDocumentType(documentType);
-                document.setFilePath(originalFilename);
+                document.setFilePath(filePath); // Set new filePath
                 document.setDocumentExtension(documentExtension);
 
                 return documentRepository.save(document);
@@ -113,6 +117,7 @@ public class DocumentServiceImpl implements IDocumentService {
             throw new CustomException("Error while uploading the document to Google Cloud Storage", e);
         }
     }
+
 
 
     
@@ -138,10 +143,10 @@ public class DocumentServiceImpl implements IDocumentService {
             }
             return documents;
         } catch (CustomException e) {
-        	e.printStackTrace();
+        	//e.printStackTrace();
             throw new CustomException(e.getMessage());
         } catch (Exception e) {
-        	e.printStackTrace();
+        	//e.printStackTrace();
             throw new CustomException("Error while retrieving documents for user with ID: " + userId);
         }
     }
