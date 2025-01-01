@@ -8,22 +8,22 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.mayflowertech.chilla.entities.User;
-import com.mayflowertech.chilla.services.impl.UserService;
+import com.mayflowertech.chilla.entities.AuthUser;
+import com.mayflowertech.chilla.services.impl.AuthUserService;
 
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
-	private UserService userService;
+	private AuthUserService userService;
 	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		System.out.println("CustomAuthenticationProvider authe");
 		String name = authentication.getName();
 		String password = authentication.getCredentials().toString();
-		User user = new User(name, password);
+		AuthUser user = new AuthUser(name, password);
 		boolean valid =  userService.validateUser(user);
 		if(valid){
 			UserDetails userdetails = userService.loadUserByUsername(name);

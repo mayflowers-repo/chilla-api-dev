@@ -1,10 +1,8 @@
 package com.mayflowertech.chilla.services.impl;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.transaction.Transactional;
@@ -15,11 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.mayflowertech.chilla.config.AuthorizationConstants;
@@ -57,7 +51,7 @@ import com.mayflowertech.chilla.utils.CommonUtils;
 import com.mayflowertech.chilla.utils.PasswordUtils;
 
 @Service
-public class UserService implements UserDetailsService, IUserService {
+public class UserService implements  IUserService {
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
 	@Autowired
@@ -93,23 +87,7 @@ public class UserService implements UserDetailsService, IUserService {
 	@Autowired
 	private IAddressRepository addressRepository;
 	
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByUsername(username);
-		if (user == null) {
-			throw new UsernameNotFoundException("Invalid username or password.");
-		}
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-				getAuthority(user));
-	}
 
-	private Set<SimpleGrantedAuthority> getAuthority(User user) {
-		Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-		user.getRoles().forEach(role -> {
-			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRolecategory()));
-		});
-		return authorities;
-	}
 
 	@Override
 	public User createUser(User user) throws Throwable {
@@ -128,27 +106,7 @@ public class UserService implements UserDetailsService, IUserService {
 		return user;
 	}
 
-	@Override
-	public boolean validateUser(User user) {
-		String usrpwd = user.getPassword();
-		user = userRepository.findByUsernameAndActive(user.getUsername(), true);
-		if (user == null) {
-			System.out.println("validate user is null");
-		} else {
 
-			System.out.println("validate user is not null");
-			boolean passwordMatch = PasswordUtils.verifyUserPassword(usrpwd, user.getPassword(),
-					Constants.PASSWORD_SALT);
-			if (passwordMatch)
-				return true;
-			else {
-				System.out.println("Password match failed for " + user.getUsername());
-				return false;
-			}
-
-		}
-		return false;
-	}
 
 	@Override
 	public User updateUser(User user, boolean changepassword) {
@@ -191,59 +149,7 @@ public class UserService implements UserDetailsService, IUserService {
 		return userRepository.findById(UUID.fromString(id));
 	}
 
-	@Override
-	@Transactional
-	public User addRoletoUser(User user, Role role) {
-		logger.info("addRoletoUser  " + user + "   role " + role);
-		try {
-			User ret = userRepository.findById(user.getId());
-			if (role.getId() != null && role.getRolename() == null) {
-				role = roleService.getById(role.getId().toString());
-			}
-			if ((ret != null) && (!this.hasRole(ret, role))) {
-				ret.addRole(role);
-				return userRepository.save(ret);
-			}
-
-			return user;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return null;
-		}
-	}
-
-	@Override
-	public User removeRolefromUser(User user, Role role) {
-		logger.debug("removeRolefromUser  " + user + "   role " + role);
-		User ret = userRepository.findById(user.getId());
-		ret.removeRole(role);
-		return userRepository.save(ret);
-	}
-
-	@Override
-	public boolean hasRole(User user, Role role) {
-		System.out.println("before  " + user + "   role " + role);
-
-		user = userRepository.findByUsername(user.getUsername());
-		logger.info("hasRole  " + user + "   role " + role);
-		if (user != null) {
-			if (user.getRoles() == null) {
-				// System.out.println("user roles is null");
-				return false;
-			}
-			if (user.getRoles().size() == 0) {
-				// System.out.println("user has no roles");
-				return false;
-			}
-			for (Role tmpRole : user.getRoles()) {
-				if (tmpRole.getRolename().trim().equalsIgnoreCase(role.getRolename().trim()))
-					return true;
-			}
-		} else {
-			System.out.println("user is null");
-		}
-		return false;
-	}
+	
 
 	@Override
 	public boolean isExist(User user) {
@@ -268,29 +174,7 @@ public class UserService implements UserDetailsService, IUserService {
 		return userRepository.findByActiveOrderByUsernameAsc(true);
 	}
 
-	@Override
-	public User getCurrentLoggedInUser() {
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		System.out.println("Getting current logged in user");
-		String username = "";
-		User user = null;
-		if (principal instanceof UserDetails) {
-
-			username = ((UserDetails) principal).getUsername();
-			System.out.println("Getting current logged in user : " + username);
-
-		} else {
-
-			username = principal.toString();
-			System.out.println("else Getting current logged in user : " + username);
-
-		}
-		if (username.trim().length() > 0) {
-			user = userRepository.findByUsername(username.trim());
-		}
-		return user;
-	}
-
+	
 	public String generatePasswordResetLink(User user, String uri) {
 		String ret = "";
 
@@ -309,36 +193,7 @@ public class UserService implements UserDetailsService, IUserService {
 	}
 
 	
-	public User getUserFromSignature(String data) {
-		User user = null;
-
-		if (data == null)
-			return user;
-
-		if (data.trim().isEmpty())
-			return user;
-
-		long ut1 = Instant.now().getEpochSecond();
-		System.out.println("1 signature is \n" + data);
-
-		String decryptdata = CommonUtils.decrypt(data, AuthorizationConstants.AES_SIGNINGSALT,
-				AuthorizationConstants.AES_SIGNINGSALT);
-		String[] tokens = decryptdata.split("##");
-
-		System.out.println("decryptdata = " + decryptdata);
-		System.out.println("Tokens : " + tokens.length);
-
-		if (tokens.length == 3) {
-			String username = tokens[1];
-			System.out.println("Token user : " + username);
-			String validstatus = tokens[2];
-			if (validstatus.trim().equalsIgnoreCase("OK")) {
-				user = this.getUser(username);
-			}
-		}
-
-		return user;
-	}
+	
 
 	@Override
 	public User checkSocialUser(User user) throws CustomException{
@@ -356,7 +211,7 @@ public class UserService implements UserDetailsService, IUserService {
 			user.setPassword(PasswordUtils.generateSecurePassword(user.getSocialId(), Constants.PASSWORD_SALT));
 			Role role = roleService.getRoleByName(SystemRoles.CUSTOMER.getRoleCode());
 			user = userRepository.save(user);
-			addRoletoUser(user, role);
+			//addRoletoUser(user, role);
 		}
 
 		final Authentication authentication = authenticationManager
@@ -646,5 +501,8 @@ public class UserService implements UserDetailsService, IUserService {
 			throw new CustomException("The user yet to register as customer");
 		}
 	}
+
+
+
 
 }

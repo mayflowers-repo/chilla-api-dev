@@ -19,20 +19,13 @@ import com.mayflowertech.chilla.entities.pojo.StudentPojo;
 public interface IUserService {
 	User createUser(User user) throws Exception, Throwable;
 	User updateUser(User user, boolean changepassword);
-	boolean validateUser(User user);
 	User getUser(String username);
 	User getById(String id);
 	User getByEmail(String email);
 	User getByMobile(String mobile);
 	boolean isExist(User user);	
-	public User addRoletoUser(User user, Role role);
-	boolean hasRole(User user, Role role);	
 	public List<User> getAllActiveUsers();
 	public List<User> getAllUsers();
-	public User getCurrentLoggedInUser();
-	User removeRolefromUser(User user, Role role);
-	String generatePasswordResetLink(User user, String uri);
-	User getUserFromSignature(String signature);
     User checkSocialUser(User user) throws CustomException;
     
     public Customer registerCustomer(CustomerPojo customer) throws Throwable;

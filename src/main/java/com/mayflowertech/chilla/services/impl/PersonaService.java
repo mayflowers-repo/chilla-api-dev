@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.mayflowertech.chilla.config.Constants;
 import com.mayflowertech.chilla.config.custom.CustomException;
+import com.mayflowertech.chilla.entities.AuthUser;
 import com.mayflowertech.chilla.entities.Customer;
 import com.mayflowertech.chilla.entities.Manager;
 import com.mayflowertech.chilla.entities.Patient;
@@ -19,7 +20,6 @@ import com.mayflowertech.chilla.entities.Student;
 import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.entities.pojo.UserSignupPojo;
 import com.mayflowertech.chilla.enums.MailOtpPurpose;
-import com.mayflowertech.chilla.enums.OtpStatus;
 import com.mayflowertech.chilla.enums.RoleRequestStatus;
 import com.mayflowertech.chilla.enums.SystemRoles;
 import com.mayflowertech.chilla.repositories.ICustomerRepository;
@@ -27,6 +27,7 @@ import com.mayflowertech.chilla.repositories.IManagerRepository;
 import com.mayflowertech.chilla.repositories.IPatientRepository;
 import com.mayflowertech.chilla.repositories.IRoleRequestRepository;
 import com.mayflowertech.chilla.repositories.IStudentRepository;
+import com.mayflowertech.chilla.services.IAuthUserService;
 import com.mayflowertech.chilla.services.IMailService;
 import com.mayflowertech.chilla.services.IPersonaService;
 import com.mayflowertech.chilla.services.IRoleService;
@@ -60,6 +61,8 @@ public class PersonaService implements IPersonaService{
 	@Autowired
 	private IMailService mailService;
 	
+	@Autowired
+	private IAuthUserService authUserService;
 	
 	@Override
 	public List<Customer> listCustomers() {
@@ -154,7 +157,9 @@ public class PersonaService implements IPersonaService{
 			}
 
 			if (role != null) {
-				userService.addRoletoUser(user, role);
+				AuthUser authUser = new AuthUser();
+				authUser.setId(user.getId());
+				authUserService.addRoletoUser(authUser, role);
 			}
 			logger.info("created user and assigned role.");
 			RoleRequest roleRequest = new RoleRequest();

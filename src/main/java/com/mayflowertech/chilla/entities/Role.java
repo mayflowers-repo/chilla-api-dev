@@ -42,7 +42,7 @@ public class Role extends BaseEntity implements Serializable {
 	
 	@JsonIgnore
 	@ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
-	private Set<User> users = new HashSet<User>();
+	private Set<AuthUser> users = new HashSet<AuthUser>();
 	
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "roles_permissions", 
@@ -91,12 +91,12 @@ public class Role extends BaseEntity implements Serializable {
 	}
 
 
-	public Set<User> getUsers() {
+	public Set<AuthUser> getUsers() {
 		return users;
 	}
 
 
-	public void setUsers(Set<User> users) {
+	public void setUsers(Set<AuthUser> users) {
 		this.users = users;
 	}
 

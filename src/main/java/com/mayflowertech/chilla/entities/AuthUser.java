@@ -18,7 +18,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
@@ -39,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 @Entity
 @Table(name = "users", uniqueConstraints=
 @UniqueConstraint(columnNames={"username"}))
-public class User extends BaseEntity {
+public class AuthUser extends BaseEntity implements UserDetails {
 
 	private static final long serialVersionUID = 1L;
 
@@ -74,7 +73,12 @@ public class User extends BaseEntity {
     @Column(name = "mobile", nullable = true, length = 15)
     private String mobile;
 
-
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "users_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<Role>();
 
     @Column(name = "photo_url", nullable = true, length = 250)
     private String photoUrl;
@@ -145,7 +149,26 @@ public class User extends BaseEntity {
         this.authtoken = authtoken;
     }
 
-   
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        roles.add(role);
+        if (role != null) {
+            role.getUsers().add(this);
+        }
+    }
+
+    public void removeRole(Role role) {
+        roles.remove(role);
+        role.getUsers().remove(this);
+    }
+
     public String getPhotoUrl() {
         return photoUrl;
     }
@@ -178,14 +201,47 @@ public class User extends BaseEntity {
         this.assignedRoles = assignedRoles;
     }
 
+    @JsonIgnore
+    @Override
+    public List<GrantedAuthority> getAuthorities() {
+        Set<GrantedAuthority> setAuths = new HashSet<GrantedAuthority>();
+        // Build user's authorities
+        if (this.getRoles().size() > 0) {
+            for (Role userRole : this.getRoles()) {
+                setAuths.add(new SimpleGrantedAuthority(userRole.getRolecategory()));
+            }
+        }
 
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>(setAuths);
+        return authorities;
+    }
 
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isEnabled() {
+        return isActive();
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        AuthUser user = (AuthUser) o;
         return Objects.equals(username, user.username);
     }
 
@@ -194,21 +250,41 @@ public class User extends BaseEntity {
         return Objects.hash(username);
     }
 
-    public User() {
+    public AuthUser() {
     }
 
-    public User(String name, String email, String password) {
+    public AuthUser(String name, String email, String password) {
         this.username = name;
         this.email = email;
         this.password = password;
     }
 
-    public User(String name, String password) {
+    public AuthUser(String name, String password) {
         this.username = name;
         this.password = password;
     }
 
+    @JsonIgnore
+    public boolean hasPermission(String key) {
+        if (key.indexOf("_") > 0) {
+            String[] parts = key.split("_");
+            key = parts[parts.length - 1];
+        }
 
+        if (this.getRoles().size() > 0) {
+            for (Role userRole : this.getRoles()) {
+                if (userRole.getPermissions().size() > 0) {
+                    for (Permission perm : userRole.getPermissions()) {
+                        if (perm.getName().endsWith(key)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
 
 	public String getStatus() {
@@ -217,17 +293,6 @@ public class User extends BaseEntity {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-	
-    @Column(name = "city", nullable = true, length = 25)
-    private String city;
-
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
 	}
 
 	public String getMobile() {
@@ -240,7 +305,7 @@ public class User extends BaseEntity {
 
 	@Override
     public String toString() {
-        return "User{" +
+        return "AuthUser{" +
                 "id=" + id +
                 ", email='" + email + '\'' +
                 ", username='" + username + '\'' +
@@ -311,42 +376,7 @@ public class User extends BaseEntity {
 	}
 	
 	
-	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<AddressProofDocument> documents = new HashSet<>();
 
-	public Set<AddressProofDocument> getDocuments() {
-	    return documents;
-	}
 
-	public void setDocuments(Set<AddressProofDocument> documents) {
-	    this.documents = documents;
-	}
 
-	
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_address",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "address_id"))
-    private Set<Address> addresses = new HashSet<>();
-
-    // Getters and setters
-    public Set<Address> getAddresses() {
-        return addresses;
-    }
-
-    public void setAddresses(Set<Address> addresses) {
-        this.addresses = addresses;
-    }
-    
-	public void addAddress(Address address) {
-	    this.addresses.add(address);
-	    address.getUsers().add(this);
-	}
-	
-	public void removeAddress(Address address) {
-	    this.addresses.remove(address);
-	    address.getUsers().remove(this);
-	}
 }

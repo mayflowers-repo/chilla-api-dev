@@ -9,21 +9,21 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.mayflowertech.chilla.entities.AppConfig;
+import com.mayflowertech.chilla.entities.AuthUser;
 import com.mayflowertech.chilla.entities.Permission;
 import com.mayflowertech.chilla.entities.Role;
-import com.mayflowertech.chilla.entities.User;
 import com.mayflowertech.chilla.enums.SystemConfigGroup;
 import com.mayflowertech.chilla.enums.SystemRoles;
 import com.mayflowertech.chilla.enums.ValueTypes;
 import com.mayflowertech.chilla.services.IAppConfigService;
+import com.mayflowertech.chilla.services.IAuthUserService;
 import com.mayflowertech.chilla.services.IPermissionService;
 import com.mayflowertech.chilla.services.IRoleService;
-import com.mayflowertech.chilla.services.IUserService;
 
 @Component
 public class SystemData {
 	@Autowired
-	private IUserService userService;
+	private IAuthUserService userService;
 
 	@Autowired
 	private IRoleService roleService;
@@ -44,12 +44,12 @@ public class SystemData {
 
 	@EventListener
 	public void appReady(ApplicationReadyEvent event) throws Exception, Throwable {
-		User user = null;
+		AuthUser user = null;
 		if (applicationConfigParams.getEnvironment() != null
 				&& applicationConfigParams.getEnvironment().equalsIgnoreCase("prod")) {
-			user = new User("systemadmin", "admin@test.com", "systemadmin1");
+			user = new AuthUser("systemadmin", "admin@test.com", "systemadmin1");
 		} else {
-			user = new User("systemadmin", "admin@test.com", "systemadmin");
+			user = new AuthUser("systemadmin", "admin@test.com", "systemadmin");
 		}
 
 		user.setFirstName("System");
@@ -162,7 +162,7 @@ public class SystemData {
 		}
 
 		// create a dummy user
-		user = new User("render", "render@test.com", "redner");
+		user = new AuthUser("render", "render@test.com", "redner");
 		user.setFirstName("Render user");
 		user.setLastName("dummy");
 
@@ -175,7 +175,7 @@ public class SystemData {
 		role = roleService.getRoleByName(SystemRoles.GUEST.getRoleCode());
 		userService.addRoletoUser(user, role);
 
-		user = new User("caregiver", "caregiver@test.com", "care");
+		user = new AuthUser("caregiver", "caregiver@test.com", "care");
 		user.setFirstName("Care");
 		user.setLastName("Giver");
 
@@ -188,7 +188,7 @@ public class SystemData {
 		role = roleService.getRoleByName(SystemRoles.CAREGIVER.getRoleCode());
 		userService.addRoletoUser(user, role);
 
-		user = new User("customer1", "customer1@test.com", "cust");
+		user = new AuthUser("customer1", "customer1@test.com", "cust");
 		user.setFirstName("Customer");
 		user.setLastName("First");
 
@@ -201,7 +201,7 @@ public class SystemData {
 		role = roleService.getRoleByName(SystemRoles.CUSTOMER.getRoleCode());
 		userService.addRoletoUser(user, role);
 
-		user = new User("admin1", "admin1@test.com", "admin");
+		user = new AuthUser("admin1", "admin1@test.com", "admin");
 		user.setFirstName("Admin");
 		user.setLastName("First");
 

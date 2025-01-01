@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.mayflowertech.chilla.entities.ResponseStatus;
-import com.mayflowertech.chilla.services.impl.UserService;
+import com.mayflowertech.chilla.services.impl.AuthUserService;
 import com.mayflowertech.chilla.utils.JsonUtils;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
   @Autowired
-  private UserService userService;
+  private AuthUserService userService;
 
   @Override
   protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
