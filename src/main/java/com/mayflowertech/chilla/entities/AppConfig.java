@@ -2,16 +2,19 @@ package com.mayflowertech.chilla.entities;
 
 import java.io.Serializable;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "app_config", uniqueConstraints=
@@ -26,7 +29,7 @@ public class AppConfig extends BaseEntity implements Serializable{
 
     @Id
     @Column(name = "id", length = 64, updatable = false, nullable = false)
-    @org.hibernate.annotations.Type(type = "pg-uuid")
+    @JdbcTypeCode(SqlTypes.UUID)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     

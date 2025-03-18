@@ -23,10 +23,6 @@ import com.mayflowertech.chilla.entities.State;
 import com.mayflowertech.chilla.enums.PatientRelation;
 import com.mayflowertech.chilla.services.IMetadataService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/karuthal/api/v1/metadata")
@@ -35,15 +31,8 @@ public class MetadataController {
 
 	@Autowired
 	private IMetadataService metadataService;
-
-	@ApiOperation(value = "View a list of all countries")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
+	
+	
 	@RequestMapping(value = "/countries", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<String>> getCountries() {
 	    try {
@@ -70,14 +59,6 @@ public class MetadataController {
 
 
 
-	@ApiOperation(value = "View a list of all states")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
 	@RequestMapping(value = "/states", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<String>> getStates() {
 	    try {
@@ -103,14 +84,7 @@ public class MetadataController {
 	}
 
 	
-	@ApiOperation(value = "View a list of all districts")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
+
 	@RequestMapping(value = "/districts", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<String>> getDistricts(
 		    @RequestParam(value = "stateName", required = true) String stateName  // Adding query parameter for stateName
@@ -138,14 +112,7 @@ public class MetadataController {
 
 
 	
-	@ApiOperation(value = "View a list of all personalized services")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
+
 	@RequestMapping(value = "/services", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<PersonalizedService>> getPersonServices() {
 	    try {
@@ -163,14 +130,7 @@ public class MetadataController {
 	    }
 	}
 
-	@ApiOperation(value = "View a list of all value-added services")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
+
 	@RequestMapping(value = "/vaservices", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<PersonalizedService>> getValueAddedServices() {
 	    try {
@@ -188,14 +148,7 @@ public class MetadataController {
 	}
 
 
-	@ApiOperation(value = "View a list of all relations")
-	@ApiResponses(value = {
-	    @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	    @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	    @ApiResponse(code = 500, message = "Internal server error")
-	})
+
 	@RequestMapping(value = "/patientrelations", method = { RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<List<String>> getPatientRelations() {
 	    try {

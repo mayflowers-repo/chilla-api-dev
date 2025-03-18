@@ -1,7 +1,7 @@
 package com.mayflowertech.chilla.config;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.springframework.stereotype.Component;
 

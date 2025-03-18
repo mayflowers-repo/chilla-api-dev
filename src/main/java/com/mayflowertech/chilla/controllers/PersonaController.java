@@ -31,10 +31,6 @@ import com.mayflowertech.chilla.entities.pojo.UserSignupPojo;
 import com.mayflowertech.chilla.services.IPersonaService;
 import com.mayflowertech.chilla.services.IUserService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/karuthal/api/v1/persona")
@@ -53,10 +49,7 @@ public class PersonaController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PersonaController.class);
 
-	@ApiOperation(value = "Sign up a new persona", response = User.class)
-	@ApiResponses(value = { @ApiResponse(code = 201, message = "User added/updated successfully"),
-			@ApiResponse(code = 409, message = "User already exists"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found") })
+
 	@RequestMapping(value = "/signup", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PostMapping("/signup")
 	public ApiResult<User> addUser(@RequestBody UserSignupPojo persona) {
@@ -80,10 +73,7 @@ public class PersonaController {
 
 
 	
-	  @ApiOperation(value = "Register new customer", response = Customer.class)
-	  @ApiResponses(value = {@ApiResponse(code = 201, message = "Customer added/updated successfully"),
-	      @ApiResponse(code = 409, message = "Customer already exists"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
 	  @RequestMapping(value = "/regcustomer", method = {RequestMethod.POST},
 	      produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<CustomerPojo> registerCustomer(@RequestBody CustomerPojo customer) {
@@ -107,11 +97,6 @@ public class PersonaController {
 	  
 	 
 
-
-	  @ApiOperation(value = "Enroll a new patient", response = Patient.class)
-	  @ApiResponses(value = {@ApiResponse(code = 201, message = "Patient added/updated successfully"),
-	      @ApiResponse(code = 409, message = "Patient already exists"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
 	  @RequestMapping(value = "/enrollpatient", method = {RequestMethod.POST},
 	      produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<PatientPojo> enrollPatient(@RequestBody PatientPojo patient) {
@@ -136,14 +121,6 @@ public class PersonaController {
 
 	  
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-	  @ApiOperation(value = "View a list of all users")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/users", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<User>> getUsers(Model model) {
 	      try {
@@ -165,14 +142,6 @@ public class PersonaController {
 	  }
 
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})	  
-	  @ApiOperation(value = "View a list of all customers")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/customers", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<Customer>> getCustomers(Model model) {
 	      try {
@@ -196,14 +165,6 @@ public class PersonaController {
 
 
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})	  
-	  @ApiOperation(value = "View a list of all managers")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/managers", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<Manager>> getManagers(Model model) {
 	      try {
@@ -227,14 +188,6 @@ public class PersonaController {
 
 	  
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-	  @ApiOperation(value = "View a list of all students")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/students", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<Student>> getStudents(Model model) {
 	      try {
@@ -257,14 +210,6 @@ public class PersonaController {
 	  }
 
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-	  @ApiOperation(value = "View a list of all patients")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/patients", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<Patient>> getPatients(Model model) {
 	      try {
@@ -288,14 +233,6 @@ public class PersonaController {
 
 	  
 	  @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_SYSTEMADMIN"})
-	  @ApiOperation(value = "View a list of patients enrolled by a specific customer")
-	  @ApiResponses(value = {
-	      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-	      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-	      @ApiResponse(code = 500, message = "Internal server error")
-	  })
 	  @RequestMapping(value = "/patientsby/{customerId}", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
 	  public ApiResult<List<Patient>> getPatientsByCustomerId(@PathVariable Long customerId) {
 	      try {

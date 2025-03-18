@@ -3,14 +3,16 @@ package com.mayflowertech.chilla.entities;
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Proxy;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Proxy(lazy = false)
 @Entity
@@ -19,7 +21,7 @@ public class College  extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@Id
 	@Column(name = "id", length = 50,updatable = false, nullable = false)
-	@org.hibernate.annotations.Type(type = "pg-uuid")
+	@JdbcTypeCode(SqlTypes.UUID)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
 	

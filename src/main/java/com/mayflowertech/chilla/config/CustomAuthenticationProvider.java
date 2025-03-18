@@ -1,6 +1,7 @@
 package com.mayflowertech.chilla.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,10 +14,16 @@ import com.mayflowertech.chilla.services.impl.UserService;
 
 
 @Component
+
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
+	@Lazy
 	private UserService userService;
+	
+	public CustomAuthenticationProvider(@Lazy UserService userService) { 
+        this.userService = userService;
+    }
 	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {

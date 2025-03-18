@@ -1,6 +1,7 @@
 package com.mayflowertech.chilla.config;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -18,7 +19,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtAuthorizationProvider  implements Serializable {
@@ -58,7 +59,7 @@ public class JwtAuthorizationProvider  implements Serializable {
        return Jwts.builder()
                .setSubject(authentication.getName())
                .claim(Constants.AUTHORITIES_KEY, authorities)
-               .signWith(SignatureAlgorithm.HS256, Constants.SIGNING_KEY)
+               .signWith(Keys.hmacShaKeyFor(Constants.SIGNING_KEY.getBytes(StandardCharsets.UTF_8)))
                .setIssuedAt(new Date(System.currentTimeMillis()))
                .setExpiration(new Date(System.currentTimeMillis() + Constants.ACCESS_TOKEN_VALIDITY_SECONDS*1000))
                .compact();

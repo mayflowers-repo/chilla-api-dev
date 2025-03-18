@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.transaction.Transactional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +54,8 @@ import com.mayflowertech.chilla.services.IUserService;
 import com.mayflowertech.chilla.utils.CommonUtils;
 import com.mayflowertech.chilla.utils.PasswordUtils;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserService implements UserDetailsService, IUserService {
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -81,9 +81,14 @@ public class UserService implements UserDetailsService, IUserService {
 	@Autowired
 	private JwtAuthorizationProvider jwtTokenUtil;
 
-	@Autowired
 	private AuthenticationManager authenticationManager;
 
+    @Autowired
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
+    
 	@Autowired
 	private IMailService mailService;
 	

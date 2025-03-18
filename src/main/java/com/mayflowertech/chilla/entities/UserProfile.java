@@ -3,21 +3,25 @@ package com.mayflowertech.chilla.entities;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Proxy;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.type.SqlTypes;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Proxy(lazy = false)
 @Entity
@@ -27,7 +31,7 @@ public class UserProfile extends BaseEntity implements Serializable{
     private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "id", length = 50,updatable = false, nullable = false)
-    @org.hibernate.annotations.Type(type = "pg-uuid")
+    @JdbcTypeCode(SqlTypes.UUID)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     

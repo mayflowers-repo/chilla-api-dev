@@ -27,10 +27,6 @@ import com.mayflowertech.chilla.entities.pojo.WorkLogPojo;
 import com.mayflowertech.chilla.services.IWorkLogService;
 import com.mayflowertech.chilla.utils.CommonUtils;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/karuthal/api/v1/worklog")
@@ -46,11 +42,6 @@ public class WorkLogController {
 	  
 	  
 	  
-    @ApiOperation(value = "Create a new work log")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully created work log"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ApiResult<WorkLogPojo> createWorkLog(@RequestBody WorkLog workLog) {
         try {
@@ -66,12 +57,6 @@ public class WorkLogController {
     }
     
     
-    @ApiOperation(value = "Complete a work log")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully completed work log"),
-        @ApiResponse(code = 404, message = "Work log not found"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
     @RequestMapping(value = "/complete/{logId}", method = RequestMethod.PUT)
     public ApiResult<WorkLogPojo> completeWorkLog(@PathVariable("logId") Long logId) {
         try {
@@ -88,12 +73,6 @@ public class WorkLogController {
     
     
     
-    @ApiOperation(value = "Get work logs for a particular day")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved work logs"),
-        @ApiResponse(code = 404, message = "No work logs found for the specified date"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
     @RequestMapping(value = "/date/{date}", method = RequestMethod.GET)
     public ApiResult<List<WorkLogPojo>> getWorkLogsByDate(@PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
@@ -111,12 +90,7 @@ public class WorkLogController {
         }
     }
     
-    @ApiOperation(value = "Get the latest unfinished work log for a student")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved work log"),
-        @ApiResponse(code = 404, message = "Work log not found"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
+
     @RequestMapping(value = "/unfinished/student/{studentId}", method = RequestMethod.GET)
     public ApiResult<WorkLogPojo> getLatestUnfinishedWorkLog(@PathVariable("studentId") Long studentId) {
         try {
@@ -137,12 +111,7 @@ public class WorkLogController {
         }
     }
     
-    @ApiOperation(value = "Get a work log by ID")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved work log"),
-        @ApiResponse(code = 404, message = "Work log not found"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
+
     @RequestMapping(value = "/{logId}", method = RequestMethod.GET)
     public ApiResult<WorkLogPojo> getWorkLog(@PathVariable("logId") Long logId) {
         try {
@@ -198,12 +167,6 @@ public class WorkLogController {
 
 
     
-    @ApiOperation(value = "Get all work logs for a student by student ID")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved work logs"),
-        @ApiResponse(code = 404, message = "No work logs found for the student"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
     @RequestMapping(value = "/student/{studentId}", method = RequestMethod.GET)
     public ApiResult<List<WorkLogPojo>> getWorkLogsByStudentId(@PathVariable("studentId") Long studentId) {
         try {
@@ -233,12 +196,6 @@ public class WorkLogController {
     }
     
     
-    @ApiOperation(value = "Get work logs based on criteria")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved work logs based on criteria"),
-        @ApiResponse(code = 404, message = "No work logs found for the given criteria"),
-        @ApiResponse(code = 500, message = "An unexpected error occurred")
-    })
     @RequestMapping(value = "/worklogsbycriteria", method = RequestMethod.POST)
     public ApiResult<List<WorkLogPojo>> getWorkLogsByCriteria(@RequestBody WorkLogCriteriaPojo workLogCriteria) {
         try {

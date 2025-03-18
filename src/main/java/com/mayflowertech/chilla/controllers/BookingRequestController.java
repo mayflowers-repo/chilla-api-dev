@@ -3,7 +3,7 @@ package com.mayflowertech.chilla.controllers;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +30,6 @@ import com.mayflowertech.chilla.entities.BookingRequest;
 import com.mayflowertech.chilla.enums.BookingStatus;
 import com.mayflowertech.chilla.services.IBookingRequestService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -48,10 +45,6 @@ public class BookingRequestController {
     
     // 1. Create a new booking request
     @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN", "ROLE_CUSTOMER"})
-	@ApiOperation(value = "Create a booking request", response = BookingRequest.class)
-	@ApiResponses(value = { @ApiResponse(code = 201, message = "Booking Request added successfully"),
-			@ApiResponse(code = 409, message = "Booking Request already exists"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found") })
 	@RequestMapping(value = "/create", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ApiResult<BookingRequest> createBookingRequest(@RequestBody BookingRequest bookingRequest) {
 	    try {
@@ -78,12 +71,6 @@ public class BookingRequestController {
 	
 	 // 2. Update an existing booking request
 	@Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN", "ROLE_CUSTOMER"})
-    @ApiOperation(value = "Update a booking request", response = BookingRequest.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Booking Request updated successfully"),
-        @ApiResponse(code = 404, message = "Booking Request not found"),
-        @ApiResponse(code = 400, message = "Invalid input")
-    })
     @PutMapping("/{id}")
     public ApiResult<BookingRequest> updateBookingRequest(
             @PathVariable Long id, 
@@ -106,11 +93,6 @@ public class BookingRequestController {
     
     // 3. Fetch all booking requests
 	@Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-    @ApiOperation(value = "Retrieve all booking requests", response = BookingRequest.class, responseContainer = "List")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking requests"),
-        @ApiResponse(code = 404, message = "Booking Requests not found")
-    })
     @GetMapping
     public ApiResult<List<BookingRequest>> getAllBookingRequests() {
         try {
@@ -130,11 +112,6 @@ public class BookingRequestController {
     }
     
 	@Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN", "ROLE_STUDENT"})
-    @ApiOperation(value = "List booking requests by student ID", response = List.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking requests"),
-        @ApiResponse(code = 404, message = "No booking requests found for the provided student ID")
-    })
     @GetMapping("/student/{studentId}")
     public ApiResult<List<BookingRequest>> listBookingRequestsByStudent(@PathVariable Long studentId) {
         try {
@@ -158,11 +135,7 @@ public class BookingRequestController {
     }
     
     
-    @ApiOperation(value = "List booking requests by customer ID", response = List.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking requests"),
-        @ApiResponse(code = 404, message = "No booking requests found for the provided customer ID")
-    })
+
     @GetMapping("/customer/{customerId}")
     public ApiResult<List<BookingRequest>> listBookingRequestsByCustomer(@PathVariable Long customerId) {
         try {
@@ -186,11 +159,6 @@ public class BookingRequestController {
     
     
     // 4. Fetch a booking request by its ID
-    @ApiOperation(value = "Get a booking request by ID", response = BookingRequest.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking request"),
-        @ApiResponse(code = 404, message = "Booking Request not found")
-    })
     @GetMapping("/{id}")
     public ApiResult<BookingRequest> getBookingRequestById(@PathVariable Long id) {
     	 try {
@@ -214,11 +182,6 @@ public class BookingRequestController {
     
     // 5. Fetch booking requests by status
     @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-    @ApiOperation(value = "Get booking requests by status", response = BookingRequest.class, responseContainer = "List")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking requests"),
-        @ApiResponse(code = 404, message = "Booking Requests not found for the given status")
-    })
     @GetMapping("/status/{status}")
     public ApiResult<List<BookingRequest>> getBookingRequestsByStatus(@PathVariable String status) {
     	  try {
@@ -243,11 +206,6 @@ public class BookingRequestController {
     
    // 6. Fetch booking requests created between two dates
     @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-    @ApiOperation(value = "Get booking requests created between two dates", response = BookingRequest.class, responseContainer = "List")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successfully retrieved booking requests"),
-        @ApiResponse(code = 404, message = "No Booking Requests found between the specified dates")
-    })
     @GetMapping("/created-between")
     public ApiResult<List<BookingRequest>> getBookingRequestsCreatedBetween(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date startDate,

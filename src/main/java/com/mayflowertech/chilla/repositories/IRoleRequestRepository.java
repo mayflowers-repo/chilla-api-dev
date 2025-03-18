@@ -1,6 +1,7 @@
 package com.mayflowertech.chilla.repositories;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ public interface IRoleRequestRepository extends JpaRepository<RoleRequest, Long>
     List<RoleRequest> findByStatus(String status);
     
     // Custom query to find all role requests by the user
-    List<RoleRequest> findByRequestedByUserId(Long userId);
+    List<RoleRequest> findByRequestedByUserId(UUID userId);
     
     // Custom query to find pending role requests
     List<RoleRequest> findByStatusOrderByRequestDateAsc(String status);

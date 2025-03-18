@@ -58,13 +58,7 @@ import com.mayflowertech.chilla.services.IUserService;
 import com.mayflowertech.chilla.services.impl.AppConfigService;
 import com.mayflowertech.chilla.services.impl.UserProfileService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import springfox.documentation.annotations.ApiIgnore;
 
-
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/karuthal/api/v1")
 public class UserController {
@@ -101,13 +95,6 @@ public class UserController {
 
 
   @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-  @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Successfully retrieved list"),
-      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
-      @ApiResponse(code = 500, message = "Internal server error")
-  })
   @RequestMapping(value = "/usermanagement/users", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<List<User>> getUsers(Model model) {
       try {
@@ -129,13 +116,7 @@ public class UserController {
   }
 
 
-  @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Successfully retrieved user"),
-      @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-      @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-      @ApiResponse(code = 404, message = "The user with the specified email was not found"),
-      @ApiResponse(code = 500, message = "Internal server error")
-  })
+
   @RequestMapping(value = "/usermanagement/userbyemail", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<UserPojo> getUserByEmail(
           @RequestParam(name = "email") String email, Model model) {
@@ -165,13 +146,6 @@ public class UserController {
   }
 
 
-  
-
-
-  @ApiOperation(value = "Validate user and get a token", response = User.class)
-  @ApiResponses(value = {@ApiResponse(code = 200, message = "Valid Token retrieved"),
-      @ApiResponse(code = 401, message = "Invalid Credentials"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/login", method = {RequestMethod.POST},
       consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<User> loginAndGetToken(@RequestBody User user) {
@@ -186,7 +160,7 @@ public class UserController {
               );
 
               user = userService.getUser(user.getUsername());
-
+              logger.info("---- user "+user);
               // Check if the user is active
               if (!UserStatus.ACTIVE.getCode().equalsIgnoreCase(user.getStatus())) {
                   logger.error("User is inactive");
@@ -257,12 +231,6 @@ public class UserController {
 
 
 
-  
-
-
-  @ApiOperation(value = "Add roles to a particular user")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user role"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/{userid}/roles", method = {RequestMethod.POST},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<User> addUserRole(@PathVariable String userid,
@@ -292,14 +260,7 @@ public class UserController {
     return new ResponseEntity<User>(user, HttpStatus.ACCEPTED);
   }
 
-  /**
-   * @param userId
-   * @param inputRoles
-   * @return
-   */
-  @ApiOperation(value = "Update roles for a user (remove and add)")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Update user roles"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
   @RequestMapping(value = "/usermanagement/{userId}/roles", method = {RequestMethod.PUT},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<User> removeUserRoles(@PathVariable("userId") String userId,  @RequestBody List<Role> inputRoles) {
@@ -347,9 +308,6 @@ public class UserController {
   
   
 
-  @ApiOperation(value = "List roles for a user")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Listed user roles"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/{userId}/roles", method = {RequestMethod.GET},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Set<Role>> listUserRoles(@PathVariable("userId") String userId) {
@@ -359,10 +317,7 @@ public class UserController {
   }
   
   
-  @ApiIgnore
-  @ApiOperation(value = "List permissions for a user")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Listed user permissions"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
   @RequestMapping(value = "/usermanagement/{userId}/permissions", method = {RequestMethod.GET},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Set<Permission>> listUserPermissions(@PathVariable("userId") String userId) {
@@ -379,9 +334,6 @@ public class UserController {
   
   
   @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-  @ApiOperation(value = "List roles in the system")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Listed ALL user roles"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/allroles", method = {RequestMethod.GET},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Role>> listAllUserRoles() {
@@ -399,10 +351,7 @@ public class UserController {
     
   }
   
-  @ApiIgnore
-  @ApiOperation(value = "Retrieve user details for an user", response = User.class)
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "retrieved user details"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
   @RequestMapping(value = "/usermanagement/updateuser", method = {RequestMethod.PUT},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<User> updateUser(@RequestBody User user) {
@@ -455,10 +404,7 @@ public class UserController {
     return new ApiResult<User>(HttpStatus.OK.value(), "Successully updated the user details", user);
   }
 
-  @ApiIgnore
-  @ApiOperation(value = "Retrieve user profile photo for an user", response = UserProfile.class)
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Retrieved user photo details"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
   @RequestMapping(value = "/usermanagement/userprofile/{userId}", method = {RequestMethod.GET}, produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
   public ResponseEntity<UserProfile> getUserProfilePhoto(@PathVariable String userId) {
 	  //String userId = "98501acc-3038-4977-842c-5c3e6611bea8";
@@ -490,10 +436,7 @@ public class UserController {
 	    
   }
 
-  @ApiIgnore
-  @ApiOperation(value = "Add/update user profile photo for an user", response = UserProfile.class)
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
+
   @RequestMapping(value = "/usermanagement/users/{userid}/profile", method = {RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> addUserProfilePhoto(@PathVariable String userid, @RequestParam("file") MultipartFile file) {
 
@@ -521,12 +464,7 @@ public class UserController {
             HttpStatus.OK);
   }
 
-  
-  @ApiIgnore
   @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-  @ApiOperation(value = "Activate a particular user")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/users/{userid}/activate", method = {RequestMethod.POST},
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<User> activateUser(@PathVariable String userid) {
@@ -543,11 +481,7 @@ public class UserController {
   }
 
 
-  @ApiIgnore
   @Secured({"ROLE_MANAGER", "ROLE_ADMIN", "ROLE_SYSTEMADMIN"})
-  @ApiOperation(value = "Deactivate a particular user")
-  @ApiResponses(value = {@ApiResponse(code = 202, message = "Updated user details"),
-      @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")})
   @RequestMapping(value = "/usermanagement/users/{userid}/deactivate",
       method = {RequestMethod.PUT}, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<User> deactivateUser(@PathVariable String userid, @RequestBody User user) {
@@ -574,11 +508,6 @@ public class UserController {
   
   
   
-  @ApiIgnore  
-  @ApiOperation(value = "Forgot Password for an user", response = User.class)
-  @ApiResponses(value = {
-          @ApiResponse(code = 202, message = "Successfully send email link to reset password"),
-          @ApiResponse(code = 404, message = "The resource you were trying to reach is not found") })
   @RequestMapping(value = "/usermanagement/users/{username}/forgotpassword", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<User> forgotUserPassword(@PathVariable String username) {
       User user = userService.getUser(username);
@@ -648,10 +577,6 @@ public class UserController {
   }
 
  
-  @ApiOperation(value = "Reset Password", response = ApiResult.class)
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "Password reset successful"),
-          @ApiResponse(code = 404, message = "User not found") })
   @RequestMapping(value = "/usermanagement/users/resetpassword", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<User> passwordResetUser(@RequestBody ResetPasswordPojo request) {
       logger.info("Attempting password reset for email: {}", request.getEmail());
@@ -680,7 +605,6 @@ public class UserController {
   }
 
 
-  @ApiIgnore
   @RequestMapping(value = "/usermanagement/verifyGoogleIdToken", method = RequestMethod.POST, 
                   consumes = MediaType.APPLICATION_JSON_VALUE, 
                   produces = MediaType.APPLICATION_JSON_VALUE)
@@ -725,7 +649,6 @@ public class UserController {
 
   
   private final String GOOGLE_TOKENINFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
-  @ApiIgnore
   @PostMapping("/usermanagement/verifyGoogleIdTokenDart")
   public ResponseEntity<?> verifyGoogleIdToken(@RequestBody Map<String, String> requestBody) {
 	  logger.info("verifyGoogleIdTokenDart=");
@@ -770,11 +693,6 @@ public class UserController {
   @Autowired
   private RSAEncryptionConfigUtil rsaEncryptionConfigUtil;
 
-  @ApiOperation(value = "Reset Password", response = ApiResult.class)
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message = "Password reset successful"),
-          @ApiResponse(code = 404, message = "User not found")
-  })
   @RequestMapping(value = "/usermanagement/changepassword", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ApiResult<User> changePassword(@RequestBody ResetPasswordPojo request) {
 	  User user;
